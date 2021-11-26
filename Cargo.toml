@@ -1,0 +1,21 @@
+[package]
+name = "superlox-rs"
+version = "0.1.0"
+authors = ["just-do-halee <just.do.halee@gmail.com>"]
+homepage = "https://github.com/just-do-halee/superlox-rs"
+repository = "https://github.com/just-do-halee/superlox-rs"
+documentation = "https://docs.rs/superlox-rs"
+
+description = "clean and beautiful lox implementation in rust. referenced to https://craftinginterpreters.com/"
+
+readme = "README.md"
+
+keywords = ["lox", "interpreter", "compiler"]
+categories = ["compiler"]
+
+license = "MIT OR Apache-2.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
