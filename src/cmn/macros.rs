@@ -1,6 +1,14 @@
 // Copyright 2021 Hwakyeom Kim(=just-do-halee)
 
 #[macro_export]
+macro_rules! name {
+    (IO) => {
+        "<::IO::>"
+    };
+}
+
+
+#[macro_export]
 macro_rules! collect_src_files {
     (
         @extension
@@ -94,3 +102,18 @@ macro_rules! fnerr {
     };
 }
 pub use fnerr;
+
+#[macro_export]
+macro_rules! derive_debug_partials {
+    (
+        $(
+            $i:item
+        )*
+    ) => {
+        $(
+            #[derive(Debug, PartialEq, Eq)]
+            $i
+        )*
+    };
+}
+pub use derive_debug_partials;

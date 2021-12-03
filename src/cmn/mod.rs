@@ -13,11 +13,14 @@ pub use rayon::prelude::*;
 
 pub use derive_new::*;
 
-pub use anyhow::{anyhow, Context, Result};
+pub use anyhow::{anyhow, Context, Error, Result};
 
 pub use crate::cli::ARGS;
 
 pub use std::{
+    ffi::{OsStr, OsString},
+    fmt::{self, Display},
     fs,
+    ops::Range,
     path::{Path, PathBuf},
 };

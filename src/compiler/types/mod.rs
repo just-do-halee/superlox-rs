@@ -6,4 +6,4 @@ mod source;
 
 pub use source::*;
 
-pub type ProcessResult = Result<PathBuf>;
+pub type ProcessResult = Result<SourceHeader>;

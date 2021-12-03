@@ -29,14 +29,10 @@ pub fn process(some_path: Option<PathBuf>) -> ProcessResult {
     let source = {
         match some_path {
             // files
-            Some(path) => {
-                let body = fs::read_to_string(&path)
-                    .with_context(fnerr!("couldn't read: {}", path.display()))?;
-                Source::new(path, body)
-            }
+            Some(path) => Source::try_from(path)?,
             // --io <INPUT>
             None => match &ARGS.io {
-                Some(input) => Source::new(pathbuf!("::io::"), input.clone()),
+                Some(input) => Source::new(input.clone()),
                 None => reterr!("'--io <INPUT>' requires a value."),
             },
         }
@@ -46,5 +42,5 @@ pub fn process(some_path: Option<PathBuf>) -> ProcessResult {
 
     let out = lexer::run(source);
 
-    Ok(out.path)
+    Ok(out.head)
 }
