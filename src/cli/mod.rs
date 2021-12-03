@@ -23,8 +23,12 @@ ARGONE! {
                 cd
             }];
 
-        /// level of searching directory
+        /// Level of searching directory
         (short, long)
         [Config] depth: Option<usize>
+
+        /// IO Stream
+        (long, name = "INPUT")
+        io: Option<String>
     }
 }

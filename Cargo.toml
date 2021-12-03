@@ -19,6 +19,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+anyhow = "1.0"
+
 rayon = "1.5"
+
 collectfiles = { path = "/Users/hwakyeom/programs/libs/collectfiles" }
+
 argone = { path = "/Users/hwakyeom/programs/libs/argone" }
+
+derive-new = "0.5"

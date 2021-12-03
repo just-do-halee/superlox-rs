@@ -22,7 +22,7 @@ macro_rules! collect_src_files {
                                 collect_src_files!(@extension))
                             )
                             .with_unwrap_or_else(|e| {
-                                panic!("source target path: {:?}", e.kind());
+                                panic!("\n\nsource target path: {:?}\n\n", e.kind());
                             });
 
             if let Some(level) = ARGS.depth { // depth
@@ -33,7 +33,7 @@ macro_rules! collect_src_files {
 
         } else {
 
-            panic!("target path {:?}: NotFound", $path)
+            panic!("\n\ntarget path {:?}: NotFound\n\n", $path)
 
         }
     };
@@ -58,3 +58,39 @@ macro_rules! collect_src_files {
     };
 }
 pub use collect_src_files;
+
+#[macro_export]
+macro_rules! pathbuf {
+    ($name:expr) => {
+        PathBuf::from($name)
+    };
+}
+pub use pathbuf;
+
+#[macro_export]
+macro_rules! reterr {
+    ($msg:literal $(,)?) => ({
+        return Err(anyhow!($msg))
+    });
+    ($err:expr $(,)?) => ({
+        return Err(anyhow!($err))
+    });
+    ($fmt:expr, $($arg:tt)*) => {
+        return Err(anyhow!($fmt, $($arg)*))
+    };
+}
+pub use reterr;
+
+#[macro_export]
+macro_rules! fnerr {
+    ($msg:literal $(,)?) => ({
+        || format!($msg)
+    });
+    ($err:expr $(,)?) => ({
+        || format!($err)
+    });
+    ($fmt:expr, $($arg:tt)*) => {
+        || format!($fmt, $($arg)*)
+    };
+}
+pub use fnerr;

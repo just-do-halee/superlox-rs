@@ -8,5 +8,7 @@ mod cli;
 mod compiler;
 
 fn main() {
-    compiler::run();
+    for res in compiler::run() {
+        eprintln!("{:⸻>40}\nFinished: {:?}", "", res);
+    }
 }
