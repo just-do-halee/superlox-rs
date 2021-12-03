@@ -16,8 +16,14 @@ ARGONE! {
     }
 
     Args {
-        [Config] src: Vec<PathBuf>
+        /// .lox files or directories
+        [Config] src: Vec<PathBuf> = vec![{
+                let mut cd = CURRENT_DIR.clone();
+                cd.push("src");
+                cd
+            }];
 
+        /// level of searching directory
         (short, long)
         [Config] depth: Option<usize>
     }

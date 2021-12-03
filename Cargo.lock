@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "argone"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "clap",
  "config",
@@ -88,9 +88,7 @@ dependencies = [
 
 [[package]]
 name = "collectfiles"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c193417e7bdddd2d461f972c6ea7b2c3a6774f08914ef019edc53c01c24dfed0"
+version = "1.1.0"
 dependencies = [
  "rayon",
  "regex",

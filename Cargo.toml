@@ -20,5 +20,5 @@ edition = "2021"
 
 [dependencies]
 rayon = "1.5"
-collectfiles = "1.0"
+collectfiles = { path = "/Users/hwakyeom/programs/libs/collectfiles" }
 argone = { path = "/Users/hwakyeom/programs/libs/argone" }
