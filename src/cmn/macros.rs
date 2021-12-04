@@ -76,6 +76,19 @@ macro_rules! pathbuf {
 pub use pathbuf;
 
 #[macro_export]
+macro_rules! makeerr {
+    ($msg:literal $(,)?) => ({
+        anyhow!($msg)
+    });
+    ($err:expr $(,)?) => ({
+        anyhow!($err)
+    });
+    ($fmt:expr, $($arg:tt)*) => {
+        anyhow!($fmt, $($arg)*)
+    };
+}
+pub use makeerr;
+#[macro_export]
 macro_rules! reterr {
     ($msg:literal $(,)?) => ({
         return Err(anyhow!($msg))

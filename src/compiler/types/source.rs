@@ -2,11 +2,19 @@
 
 use super::*;
 
+//---------------
+
 /// * this must be source file.
 #[derive(PartialEq, Eq, Clone)]
 pub enum SourceHeader {
     Header { file_name: OsString, path: PathBuf },
     IO,
+}
+
+impl Default for SourceHeader {
+    fn default() -> Self {
+        SourceHeader::IO
+    }
 }
 
 impl fmt::Debug for SourceHeader {
@@ -53,16 +61,25 @@ impl SourceHeader {
     }
 }
 
+//---------------
+
 derive_debug_partials! {
     /// * this must be source file.
-    #[derive(Clone)]
+    #[derive(Default, Clone)]
     pub struct Source {
         // when the head is none,
         // it's only because of targeting io-stream.
         pub head: SourceHeader,
         pub body: String,
     }
+}
 
+impl_!(Chopable<'s> for Source);
+
+impl AsRef<Source> for Source {
+    fn as_ref(&self) -> &Source {
+        self
+    }
 }
 
 impl Source {
@@ -77,11 +94,6 @@ impl Source {
     #[inline]
     pub fn len(&self) -> usize {
         self.body.len()
-    }
-    /// `out of bounds == None`
-    #[inline]
-    pub fn chop(&self, span: Span) -> Option<SourceChunk> {
-        SourceChunk::new(self, span)
     }
 }
 impl TryFrom<PathBuf> for Source {
@@ -138,11 +150,15 @@ impl From<Range<usize>> for Span {
     }
 }
 
+//---------------
+
 #[derive(Clone, Copy)]
 pub struct SourceChunk<'s> {
     source: &'s Source, // whole mass
     span: Span,
 }
+
+impl_!(Chopable<'s> for SourceChunk<'s>);
 
 impl<'s> Display for SourceChunk<'s> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -155,10 +171,32 @@ impl<'s> fmt::Debug for SourceChunk<'s> {
     }
 }
 
+impl<'s> AsRef<Source> for SourceChunk<'s> {
+    fn as_ref(&self) -> &Source {
+        self.source
+    }
+}
+
+impl<'s> ErrorConverter for SourceChunk<'s> {
+    #[inline]
+    fn to_error<D: Display>(&self, message: D) -> Error {
+        let Span { start, .. } = self.span;
+        anyhow!(
+            "\n\n\t[{}:{}] {:?}\n\n\n\t{}\n\n\n\t->  {}\n\n",
+            start.line,
+            start.column,
+            self.source.head,
+            self,
+            message
+        )
+    }
+}
+
 impl<'s> SourceChunk<'s> {
     /// `out of bounds == None`
     #[inline]
-    pub fn new(source: &'s Source, span: Span) -> Option<Self> {
+    pub fn new<A: Into<Span>>(source: &'s Source, span: A) -> Option<Self> {
+        let span = span.into();
         if source.body.get::<Range<usize>>(span.into()).is_some() {
             Some(SourceChunk { source, span })
         } else {

@@ -25,10 +25,3 @@ clean and beautiful lox implementation in rust. referenced to https://craftingin
 [dependencies]
 superlox-rs = "0.1.0"
 ```
-
----
-
-# Example
-```rust
-
-```
