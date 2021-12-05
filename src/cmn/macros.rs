@@ -7,6 +7,12 @@ macro_rules! name {
     };
 }
 
+#[macro_export]
+macro_rules! nl {
+    () => {
+        '\n'
+    };
+}
 
 #[macro_export]
 macro_rules! collect_src_files {
@@ -65,7 +71,6 @@ macro_rules! collect_src_files {
         collect_src_files!(@collect_tree &ARGS.src)
     };
 }
-pub use collect_src_files;
 
 #[macro_export]
 macro_rules! pathbuf {
@@ -73,7 +78,6 @@ macro_rules! pathbuf {
         PathBuf::from($name)
     };
 }
-pub use pathbuf;
 
 #[macro_export]
 macro_rules! makeerr {
@@ -87,20 +91,19 @@ macro_rules! makeerr {
         anyhow!($fmt, $($arg)*)
     };
 }
-pub use makeerr;
+
 #[macro_export]
 macro_rules! reterr {
     ($msg:literal $(,)?) => ({
-        return Err(anyhow!($msg))
+        return Err(makeerr!($msg))
     });
     ($err:expr $(,)?) => ({
-        return Err(anyhow!($err))
+        return Err(makeerr!($err))
     });
     ($fmt:expr, $($arg:tt)*) => {
-        return Err(anyhow!($fmt, $($arg)*))
+        return Err(makeerr!($fmt, $($arg)*))
     };
 }
-pub use reterr;
 
 #[macro_export]
 macro_rules! fnerr {
@@ -114,7 +117,6 @@ macro_rules! fnerr {
         || format!($fmt, $($arg)*)
     };
 }
-pub use fnerr;
 
 #[macro_export]
 macro_rules! derive_debug_partials {
@@ -129,4 +131,3 @@ macro_rules! derive_debug_partials {
         )*
     };
 }
-pub use derive_debug_partials;

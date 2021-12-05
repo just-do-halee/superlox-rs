@@ -3,8 +3,6 @@
 #[macro_use]
 mod macros;
 
-pub use macros::*;
-
 pub use argone::*;
 
 pub use collectfiles::*;

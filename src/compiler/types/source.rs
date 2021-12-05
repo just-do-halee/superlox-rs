@@ -4,7 +4,7 @@ use super::*;
 
 //---------------
 
-/// * this must be source file.
+/// * this must be a source file.
 #[derive(PartialEq, Eq, Clone)]
 pub enum SourceHeader {
     Header { file_name: OsString, path: PathBuf },
@@ -12,18 +12,21 @@ pub enum SourceHeader {
 }
 
 impl Default for SourceHeader {
+    #[inline]
     fn default() -> Self {
         SourceHeader::IO
     }
 }
 
 impl fmt::Debug for SourceHeader {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self)
     }
 }
 
 impl Display for SourceHeader {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SourceHeader::Header { path, .. } => write!(f, "{:?}", path),
@@ -47,7 +50,7 @@ impl SourceHeader {
             SourceHeader::IO => Path::new(name!(IO)),
         }
     }
-    /// if the given path is not a file then returning error.
+    /// if given path isn't a file then returns an error.
     #[inline]
     pub fn new(path: PathBuf) -> Self {
         if let Some(v) = path.file_name() {
@@ -64,11 +67,9 @@ impl SourceHeader {
 //---------------
 
 derive_debug_partials! {
-    /// * this must be source file.
+    /// * this must be a source file.
     #[derive(Default, Clone)]
     pub struct Source {
-        // when the head is none,
-        // it's only because of targeting io-stream.
         pub head: SourceHeader,
         pub body: String,
     }
@@ -77,13 +78,13 @@ derive_debug_partials! {
 impl_!(Chopable<'s> for Source);
 
 impl AsRef<Source> for Source {
+    #[inline]
     fn as_ref(&self) -> &Source {
         self
     }
 }
 
 impl Source {
-    /// * if the path is given is not suitable then returns error.
     #[inline]
     pub fn new(body: String) -> Self {
         Source {
@@ -161,17 +162,20 @@ pub struct SourceChunk<'s> {
 impl_!(Chopable<'s> for SourceChunk<'s>);
 
 impl<'s> Display for SourceChunk<'s> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.body())
     }
 }
 impl<'s> fmt::Debug for SourceChunk<'s> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self.body())
     }
 }
 
 impl<'s> AsRef<Source> for SourceChunk<'s> {
+    #[inline]
     fn as_ref(&self) -> &Source {
         self.source
     }
@@ -181,13 +185,14 @@ impl<'s> ErrorConverter for SourceChunk<'s> {
     #[inline]
     fn to_error<D: Display>(&self, message: D) -> Error {
         let Span { start, .. } = self.span;
-        anyhow!(
-            "\n\n\t[{}:{}] {:?}\n\n\n\t{}\n\n\n\t->  {}\n\n",
+        makeerr!(
+            "{n:->2}\t[{}:{}] {:?}{n:->3}\t{}{n:->3}\t->  {}{n:->2}",
             start.line,
             start.column,
             self.source.head,
             self,
-            message
+            message,
+            n = nl!()
         )
     }
 }
