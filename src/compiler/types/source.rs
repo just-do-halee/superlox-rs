@@ -2,6 +2,8 @@
 
 use super::*;
 
+pub const EOF_CHAR: char = '\0';
+
 //---------------
 
 /// * this must be a source file.
@@ -96,6 +98,14 @@ impl Source {
     pub fn len(&self) -> usize {
         self.body.len()
     }
+    #[inline]
+    pub fn chars(&self) -> Chars {
+        self.body.chars()
+    }
+    #[inline]
+    pub fn to_source_chunk(&self) -> SourceChunk {
+        self.chop(0..self.len()).unwrap()
+    }
 }
 impl TryFrom<PathBuf> for Source {
     type Error = Error;
@@ -127,6 +137,20 @@ derive_debug_partials! {
 
 }
 
+impl Display for Offset {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[P{}/L{}/C{}]", self.pos, self.line, self.column)
+    }
+}
+
+impl Display for Span {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "* start: {}, * end: {}", self.start, self.end)
+    }
+}
+
 impl From<Span> for Range<usize> {
     #[inline]
     fn from(span: Span) -> Self {
@@ -153,10 +177,10 @@ impl From<Range<usize>> for Span {
 
 //---------------
 
-#[derive(Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct SourceChunk<'s> {
-    source: &'s Source, // whole mass
-    span: Span,
+    pub source: &'s Source, // whole mass
+    pub span: Span,
 }
 
 impl_!(Chopable<'s> for SourceChunk<'s>);
@@ -186,13 +210,14 @@ impl<'s> ErrorConverter for SourceChunk<'s> {
     fn to_error<D: Display>(&self, message: D) -> Error {
         let Span { start, .. } = self.span;
         makeerr!(
-            "{n:->2}\t[{}:{}] {:?}{n:->3}\t{}{n:->3}\t->  {}{n:->2}",
+            "{n2}\t[{}:{}] {:?}{n3}\t{}{n3}\t->  {}{n2}",
             start.line,
             start.column,
             self.source.head,
             self,
             message,
-            n = nl!()
+            n2 = nl!(2),
+            n3 = nl!(3),
         )
     }
 }

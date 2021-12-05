@@ -7,10 +7,12 @@ mod cli;
 mod compiler;
 
 fn main() {
-    let stderr = io::stderr();
-    let mut handle = stderr.lock();
-    compiler::run().into_iter().for_each(|res| {
-        write!(handle, "{:⸻>40}\nFinished: {:?}\n", "", res)
+    let results = compiler::run();
+
+    let term = Term::stderr();
+
+    results.into_iter().for_each(|res| {
+        writeln!(&term, "{n:⸻>40}Finished: {:?}", res, n = nl!())
             .with_context(fnerr!("print"))
             .unwrap()
     });

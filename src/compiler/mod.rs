@@ -43,7 +43,7 @@ pub fn process(some_path: Option<PathBuf>) -> ProcessResult {
 
     // main process
 
-    let out = lexer::run(source)?;
+    let out = lexer::run(&source)?;
 
-    Ok(out.head)
+    Ok(source.head)
 }

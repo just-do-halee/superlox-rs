@@ -13,6 +13,8 @@ pub use derive_new::*;
 
 pub use anyhow::{anyhow, Context, Error, Result};
 
+pub use console::Term;
+
 pub use crate::cli::ARGS;
 
 pub use std::{
@@ -22,4 +24,5 @@ pub use std::{
     io::{self, Write},
     ops::Range,
     path::{Path, PathBuf},
+    str::Chars,
 };

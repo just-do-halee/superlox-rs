@@ -20,6 +20,8 @@ edition = "2021"
 
 [dependencies]
 
+console = "0.15"
+
 anyhow = "1.0"
 
 rayon = "1.5"

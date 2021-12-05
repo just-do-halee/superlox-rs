@@ -12,6 +12,15 @@ macro_rules! nl {
     () => {
         '\n'
     };
+    (2) => {
+        "\n\n"
+    };
+    (3) => {
+        "\n\n\n"
+    };
+    (*$count:expr) => {
+        "\n".repeat($count)
+    };
 }
 
 #[macro_export]
@@ -81,9 +90,6 @@ macro_rules! pathbuf {
 
 #[macro_export]
 macro_rules! makeerr {
-    ($msg:literal $(,)?) => ({
-        anyhow!($msg)
-    });
     ($err:expr $(,)?) => ({
         anyhow!($err)
     });
@@ -94,9 +100,6 @@ macro_rules! makeerr {
 
 #[macro_export]
 macro_rules! reterr {
-    ($msg:literal $(,)?) => ({
-        return Err(makeerr!($msg))
-    });
     ($err:expr $(,)?) => ({
         return Err(makeerr!($err))
     });
@@ -107,9 +110,6 @@ macro_rules! reterr {
 
 #[macro_export]
 macro_rules! fnerr {
-    ($msg:literal $(,)?) => ({
-        || format!($msg)
-    });
     ($err:expr $(,)?) => ({
         || format!($err)
     });
