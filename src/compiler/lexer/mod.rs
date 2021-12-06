@@ -3,14 +3,23 @@
 use super::*;
 
 #[inline]
-pub fn run<'s, S: AsRef<Source>>(source: S) -> Result<Tokens<'s>> {
-    let tokens = Vec::new();
-    let mut cursor = Cursor::new(source.as_ref().to_source_chunk());
-    eprintln!("[{}]", cursor.source.head); // for the tests, the bottleneck terminal
+pub fn run(source: &Source) -> Result<Tokens> {
+    let mut tokens = Vec::new();
+    let mut cursor = Cursor::new(source);
+    eprintln!("[{}]", cursor.source.head);
     loop {
-        match cursor.bump() {
-            EOF_CHAR => break,
-            c if c == 'a' => eprintln!("{}", cursor),
+        let c = cursor.bump();
+        match c {
+            EOF_CHAR => {
+                cursor.save_offset();
+                tokens.push(Token::new(
+                    TokenKind::Eof,
+                    cursor.to_source_chunk(),
+                    TokenLiteral::None,
+                ));
+                break;
+            }
+            'a' => eprintln!("{}", cursor),
             _ => {}
         }
     }

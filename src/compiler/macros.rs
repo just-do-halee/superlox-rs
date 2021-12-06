@@ -9,7 +9,7 @@ macro_rules! impl_ {
             type Out = SourceChunk<$lt>;
             /// `out of bounds == None`
             #[inline]
-            fn chop<A: Into<Span>>(&'s self, span: A) -> Option<Self::Out> {
+            fn chop<A: Into<Span>>(&$lt self, span: A) -> Option<Self::Out> {
                 SourceChunk::new(self.as_ref(), span)
             }
         }

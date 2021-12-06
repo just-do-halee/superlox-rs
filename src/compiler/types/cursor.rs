@@ -7,6 +7,7 @@ pub struct Cursor<'s> {
     pub source: &'s Source,
     chars: Chars<'s>,
     offset: Offset,
+    saved_offset: Offset,
     current_char: char,
 }
 
@@ -32,13 +33,35 @@ impl<'s> fmt::Debug for Cursor<'s> {
 
 impl<'s> Cursor<'s> {
     #[inline]
-    pub fn new(chunk: SourceChunk<'s>) -> Self {
+    pub fn new<S: Into<SourceChunk<'s>>>(chunk: S) -> Self {
+        let chunk = chunk.into();
         Cursor {
             source: chunk.source,
             chars: chunk.source.chars(),
             offset: chunk.span.start,
+            saved_offset: chunk.span.start,
             current_char: EOF_CHAR,
         }
+    }
+
+    #[inline]
+    pub fn to_source_chunk(&self) -> SourceChunk<'s> {
+        self.into()
+    }
+
+    #[inline]
+    pub fn save_offset(&mut self) {
+        self.saved_offset = self.offset;
+    }
+
+    #[inline]
+    pub fn load_str(&self) -> &str {
+        &self.source.body[self.saved_offset.pos..self.offset.pos]
+    }
+
+    #[inline]
+    pub fn load_span(&self) -> Span {
+        Span::from(self.saved_offset..self.offset)
     }
 
     /// base
@@ -92,11 +115,11 @@ impl<'s> Cursor<'s> {
     }
 
     #[inline]
-    pub fn preserved(&self) -> &'s str {
+    pub fn preserved(&self) -> &str {
         &self.source.body[0..self.offset.pos - 1]
     }
     #[inline]
-    pub fn remains(&self) -> &'s str {
+    pub fn remains(&self) -> &str {
         &self.source.body[self.offset.pos..self.source.len()]
     }
 }

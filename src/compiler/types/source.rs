@@ -102,10 +102,6 @@ impl Source {
     pub fn chars(&self) -> Chars {
         self.body.chars()
     }
-    #[inline]
-    pub fn to_source_chunk(&self) -> SourceChunk {
-        self.chop(0..self.len()).unwrap()
-    }
 }
 impl TryFrom<PathBuf> for Source {
     type Error = Error;
@@ -175,6 +171,14 @@ impl From<Range<usize>> for Span {
     }
 }
 
+impl From<Range<Offset>> for Span {
+    #[inline]
+    fn from(range: Range<Offset>) -> Self {
+        let Range { start, end } = range;
+        Span { start, end }
+    }
+}
+
 //---------------
 
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -237,5 +241,23 @@ impl<'s> SourceChunk<'s> {
     pub fn body(&self) -> &'s str {
         let Span { start, end } = self.span;
         &self.source.body[start.pos..end.pos]
+    }
+}
+
+impl<'s> From<&'s Source> for SourceChunk<'s> {
+    fn from(source: &'s Source) -> Self {
+        SourceChunk {
+            source,
+            span: Span::from(0..source.len()),
+        }
+    }
+}
+
+impl<'s> From<&Cursor<'s>> for SourceChunk<'s> {
+    fn from(cursor: &Cursor<'s>) -> Self {
+        SourceChunk {
+            source: cursor.source,
+            span: cursor.load_span(),
+        }
     }
 }

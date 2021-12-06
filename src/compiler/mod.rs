@@ -45,5 +45,7 @@ pub fn process(some_path: Option<PathBuf>) -> ProcessResult {
 
     let out = lexer::run(&source)?;
 
+    eprintln!("{:#?}", out);
+
     Ok(source.head)
 }
