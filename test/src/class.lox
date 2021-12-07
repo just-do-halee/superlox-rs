@@ -4,6 +4,7 @@ class DevonshireCream {
   }
 }
 
+/* /* This is block comments */ */ 
 print DevonshireCream;
 
 class Bagel {

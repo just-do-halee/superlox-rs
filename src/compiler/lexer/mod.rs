@@ -7,8 +7,8 @@ pub fn run(source: &Source) -> Result<Tokens> {
     let mut ts = Tokens::new();
     let mut cursor = Cursor::new(source);
     loop {
-        let c = cursor.bump_without_flush();
-        match c {
+        match cursor.bump_without_flush() {
+            // without flush -> manually flush
             c if WHITESPACE_CHARS.contains(&c) => {
                 cursor.flush();
                 continue;
@@ -55,10 +55,38 @@ pub fn run(source: &Source) -> Result<Tokens> {
             }
             ch!(SLASH) => {
                 cursor.flush();
-                if cursor.first() == ch!(SLASH) {
-                    while !matches!(cursor.bump(), nl!() | EOF_CHAR) {} // skip comments until it meets a new line
-                } else {
-                    push_single_token!(ts, cursor, Slash)
+                match cursor.first() {
+                    // line comment
+                    ch!(SLASH) => {
+                        while !matches!(cursor.bump(), nl!() | EOF_CHAR) {} // skip comments until it meets a new line
+                    }
+                    // block comment
+                    ch!(STAR) => {
+                        cursor.bump();
+                        let mut nest_count = 1;
+                        loop {
+                            match (cursor.bump(), cursor.first()) {
+                                // -> /*
+                                (ch!(SLASH), ch!(STAR)) => {
+                                    cursor.bump();
+                                    nest_count += 1;
+                                }
+
+                                // -> */
+                                (ch!(STAR), ch!(SLASH)) => {
+                                    cursor.bump();
+                                    nest_count -= 1;
+                                    if nest_count <= 0 {
+                                        break;
+                                    }
+                                }
+
+                                (EOF_CHAR, _) => break,
+                                _ => {}
+                            }
+                        }
+                    }
+                    _ => push_single_token!(ts, cursor, Slash),
                 }
             }
 
