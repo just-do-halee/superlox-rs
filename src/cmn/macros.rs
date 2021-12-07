@@ -107,6 +107,12 @@ macro_rules! reterr {
         return Err(makeerr!($fmt, $($arg)*))
     };
 }
+#[macro_export]
+macro_rules! _reterr {
+    ($err:expr $(,)?) => {{
+        return Err($err);
+    }};
+}
 
 #[macro_export]
 macro_rules! fnerr {

@@ -2,3 +2,6 @@
 print 2 + 1;
 print "one";
 print true;
+if (1 != 2) {
+    print "yes";
+}

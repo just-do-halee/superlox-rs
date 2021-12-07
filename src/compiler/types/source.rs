@@ -3,6 +3,7 @@
 use super::*;
 
 pub const EOF_CHAR: char = '\0';
+pub const WHITESPACE_CHARS: &[char] = &[' ', '\r', '\t', '\n'];
 
 //---------------
 
@@ -38,6 +39,7 @@ impl Display for SourceHeader {
 }
 
 impl SourceHeader {
+    #[allow(dead_code)]
     #[inline]
     pub fn as_file_name(&self) -> &OsStr {
         match self {
@@ -45,6 +47,7 @@ impl SourceHeader {
             SourceHeader::IO => OsStr::new(name!(IO)),
         }
     }
+    #[allow(dead_code)]
     #[inline]
     pub fn as_path(&self) -> &Path {
         match self {
@@ -118,7 +121,7 @@ impl TryFrom<PathBuf> for Source {
 
 derive_debug_partials! {
 
-    #[derive(Default, Clone, Copy, new)]
+    #[derive(Clone, Copy, new)]
     pub struct Offset {
         pub pos: usize,
         pub line: usize,
@@ -133,10 +136,25 @@ derive_debug_partials! {
 
 }
 
-impl Display for Offset {
+impl Default for Offset {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[P{}/L{}/C{}]", self.pos, self.line, self.column)
+    fn default() -> Self {
+        Offset {
+            pos: 0,
+            line: 1,
+            column: 0,
+        }
+    }
+}
+
+impl Span {
+    #[inline]
+    pub fn set_biased_end(&mut self) {
+        self.start = self.end;
+    }
+    #[inline]
+    pub fn set_biased_start(&mut self) {
+        self.end = self.start;
     }
 }
 
@@ -179,12 +197,19 @@ impl From<Range<Offset>> for Span {
     }
 }
 
+impl Display for Offset {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[P{}/L{}/C{}]", self.pos, self.line, self.column)
+    }
+}
+
 //---------------
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct SourceChunk<'s> {
     pub source: &'s Source, // whole mass
-    pub span: Span,
+    span: Span,
 }
 
 impl_!(Chopable<'s> for SourceChunk<'s>);
@@ -212,11 +237,15 @@ impl<'s> AsRef<Source> for SourceChunk<'s> {
 impl<'s> ErrorConverter for SourceChunk<'s> {
     #[inline]
     fn to_error<D: Display>(&self, message: D) -> Error {
-        let Span { start, .. } = self.span;
+        let Span { start, end } = self.span;
         makeerr!(
             "{n2}\t[{}:{}] {:?}{n3}\t{}{n3}\t->  {}{n2}",
-            start.line,
-            start.column,
+            if start.line != end.line {
+                format!("{}-{}", start.line, end.line)
+            } else {
+                format!("{}", start.line)
+            },
+            end.column,
             self.source.head,
             self,
             message,
@@ -238,6 +267,14 @@ impl<'s> SourceChunk<'s> {
         }
     }
     #[inline]
+    pub fn span(&self) -> &Span {
+        &self.span
+    }
+    #[inline]
+    pub fn clear(&mut self) {
+        self.span.set_biased_end();
+    }
+    #[inline]
     pub fn body(&self) -> &'s str {
         let Span { start, end } = self.span;
         &self.source.body[start.pos..end.pos]
@@ -257,6 +294,16 @@ impl<'s> From<&'s Source> for SourceChunk<'s> {
 impl<'s> From<&Cursor<'s>> for SourceChunk<'s> {
     #[inline]
     fn from(cursor: &Cursor<'s>) -> Self {
+        SourceChunk {
+            source: cursor.source,
+            span: cursor.load_span(),
+        }
+    }
+}
+
+impl<'s> From<&mut Cursor<'s>> for SourceChunk<'s> {
+    #[inline]
+    fn from(cursor: &mut Cursor<'s>) -> Self {
         SourceChunk {
             source: cursor.source,
             span: cursor.load_span(),

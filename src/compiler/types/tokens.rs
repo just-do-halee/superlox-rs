@@ -54,12 +54,15 @@ derive_debug_partials! {
         Eof,
     }
 
-    #[derive(Clone, Copy)]
+    #[derive(Clone)]
     pub enum TokenLiteral {
+        Identifier(String),
+        String(String),
+        Number(Number),
         None,
     }
 
-    #[derive(Clone, Copy)]
+    #[derive(Clone)]
     pub struct Token<'s> {
         pub kind: TokenKind,
         pub lexeme: SourceChunk<'s>,
@@ -71,7 +74,48 @@ derive_debug_partials! {
     }
 }
 
+pub static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
+
+        "and"    => TokenKind::And,
+        "class"  => TokenKind::Class,
+        "else"   => TokenKind::Else,
+        "false"  => TokenKind::False,
+        "for"    => TokenKind::For,
+        "fun"    => TokenKind::Fun,
+        "if"     => TokenKind::If,
+        "nil"    => TokenKind::Nil,
+        "or"     => TokenKind::Or,
+        "print"  => TokenKind::Print,
+        "return" => TokenKind::Return,
+        "super"  => TokenKind::Super,
+        "this"   => TokenKind::This,
+        "true"   => TokenKind::True,
+        "var"    => TokenKind::Var,
+        "while"  => TokenKind::While,
+
+};
+
+#[inline]
+pub fn parse_keyword(keyword: &str) -> Option<TokenKind> {
+    KEYWORDS.get(keyword).cloned()
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct Number(pub f64);
+
+impl Eq for Number {}
+
+impl FromStr for Number {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Number(
+            f64::from_str(s).with_context(fnerr!("{} (parse) ", s))?,
+        ))
+    }
+}
+
 impl<'s> Token<'s> {
+    #[inline]
     pub fn new<S: Into<SourceChunk<'s>>>(
         kind: TokenKind,
         lexeme: S,
@@ -98,6 +142,11 @@ impl<'s> Tokens<'s> {
         literal: TokenLiteral,
     ) -> &mut Self {
         self.body.push(Token::new(kind, lexeme, literal));
+        self
+    }
+    #[inline]
+    pub fn push_token(&mut self, token: Token<'s>) -> &mut Self {
+        self.body.push(token);
         self
     }
 }

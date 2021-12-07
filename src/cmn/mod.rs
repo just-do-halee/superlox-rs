@@ -3,7 +3,7 @@
 #[macro_use]
 mod macros;
 
-pub use argone::*;
+pub use argone::{prelude::lazy_static, *};
 
 pub use collectfiles::*;
 
@@ -15,14 +15,22 @@ pub use anyhow::{anyhow, Context, Error, Result};
 
 pub use console::Term;
 
+pub use phf_macros::proc_macro_hack_phf_map as phf_map;
+
 pub use crate::cli::ARGS;
 
 pub use std::{
+    collections::HashMap,
+    env,
     ffi::{OsStr, OsString},
     fmt::{self, Display},
-    fs,
-    io::{self, Write},
+    fs::{self, File},
+    io::{self, BufWriter, Write},
     ops::{Deref, DerefMut, Range},
     path::{Path, PathBuf},
-    str::Chars,
+    str::{Chars, FromStr},
 };
+
+lazy_static! {
+    pub static ref SRC_DIR: PathBuf = CURRENT_DIR.clone().join("src");
+}

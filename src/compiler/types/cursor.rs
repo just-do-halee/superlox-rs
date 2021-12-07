@@ -38,15 +38,15 @@ impl<'s> Cursor<'s> {
         Cursor {
             source: chunk.source,
             chars: chunk.source.chars(),
-            offset: chunk.span.start,
-            saved_offset: chunk.span.start,
+            offset: chunk.span().start,
+            saved_offset: chunk.span().start,
             current_char: EOF_CHAR,
         }
     }
 
     #[inline]
-    pub fn to_source_chunk(&self) -> SourceChunk<'s> {
-        self.into()
+    pub fn current_char(&self) -> char {
+        self.current_char
     }
 
     #[inline]
@@ -61,18 +61,65 @@ impl<'s> Cursor<'s> {
 
     #[inline]
     pub fn load_span(&self) -> Span {
-        Span::from(self.saved_offset..self.offset)
+        Span {
+            start: self.saved_offset,
+            end: self.offset,
+        }
     }
 
-    /// base
+    #[inline]
+    pub fn to_single_chunk(&self) -> SourceChunk<'s> {
+        SourceChunk::new(
+            self.source,
+            Span {
+                start: {
+                    let mut offset = self.offset;
+                    if offset.pos > 0 {
+                        offset.pos -= 1;
+                    }
+                    offset
+                },
+                end: self.offset,
+            },
+        )
+        .unwrap()
+    }
+
+    #[inline]
+    pub fn to_single_token(&self, kind: TokenKind, literal: TokenLiteral) -> Token<'s> {
+        Token {
+            kind,
+            lexeme: self.to_single_chunk(),
+            literal,
+        }
+    }
+
+    #[inline]
+    fn next(&mut self) -> char {
+        self.chars.next().unwrap_or(EOF_CHAR)
+    }
+
     /// moves to the next character
     #[inline]
     pub fn bump(&mut self) -> char {
-        let c = self.chars.next().unwrap_or(EOF_CHAR);
+        self.current_char = self.next();
+        self.flush()
+    }
 
+    /// moves to the next character
+    /// without flushing [pos/line/column]
+    #[inline]
+    pub fn bump_without_flush(&mut self) -> char {
+        let c = self.next();
         self.current_char = c;
+        c
+    }
 
-        if c != EOF_CHAR {
+    #[inline]
+    pub fn flush(&mut self) -> char {
+        let c = self.current_char;
+
+        if c != EOF_CHAR && self.offset.pos < self.source.len() {
             self.offset.pos += 1;
 
             // new line
@@ -83,7 +130,6 @@ impl<'s> Cursor<'s> {
                 self.offset.column += 1;
             }
         }
-
         c
     }
 
@@ -109,10 +155,10 @@ impl<'s> Cursor<'s> {
     }
 
     /// peeks the second symbol from the input stream without consuming it
-    #[inline]
-    pub fn second(&self) -> char {
-        self.nth_char(1)
-    }
+    // #[inline]
+    // pub fn second(&self) -> char {
+    //     self.nth_char(1)
+    // }
 
     #[inline]
     pub fn preserved(&self) -> &str {
