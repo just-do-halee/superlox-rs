@@ -14,5 +14,3 @@ pub use source::*;
 pub use tokens::*;
 
 pub type ProcessResult = Result<SourceHeader>;
-
-pub type Tokens<'s> = Vec<Token<'s>>;

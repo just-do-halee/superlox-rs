@@ -245,6 +245,7 @@ impl<'s> SourceChunk<'s> {
 }
 
 impl<'s> From<&'s Source> for SourceChunk<'s> {
+    #[inline]
     fn from(source: &'s Source) -> Self {
         SourceChunk {
             source,
@@ -254,10 +255,18 @@ impl<'s> From<&'s Source> for SourceChunk<'s> {
 }
 
 impl<'s> From<&Cursor<'s>> for SourceChunk<'s> {
+    #[inline]
     fn from(cursor: &Cursor<'s>) -> Self {
         SourceChunk {
             source: cursor.source,
             span: cursor.load_span(),
         }
+    }
+}
+
+impl<'s> From<Cursor<'s>> for SourceChunk<'s> {
+    #[inline]
+    fn from(cursor: Cursor<'s>) -> Self {
+        (&cursor).into()
     }
 }

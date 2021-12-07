@@ -4,7 +4,7 @@ use super::*;
 
 #[inline]
 pub fn run(source: &Source) -> Result<Tokens> {
-    let mut tokens = Vec::new();
+    let mut tokens = Tokens::new();
     let mut cursor = Cursor::new(source);
     eprintln!("[{}]", cursor.source.head);
     loop {
@@ -12,11 +12,7 @@ pub fn run(source: &Source) -> Result<Tokens> {
         match c {
             EOF_CHAR => {
                 cursor.save_offset();
-                tokens.push(Token::new(
-                    TokenKind::Eof,
-                    cursor.to_source_chunk(),
-                    TokenLiteral::None,
-                ));
+                tokens.push(TokenKind::Eof, &cursor, TokenLiteral::None);
                 break;
             }
             'a' => eprintln!("{}", cursor),

@@ -22,7 +22,7 @@ pub use std::{
     fmt::{self, Display},
     fs,
     io::{self, Write},
-    ops::Range,
+    ops::{Deref, DerefMut, Range},
     path::{Path, PathBuf},
     str::Chars,
 };
