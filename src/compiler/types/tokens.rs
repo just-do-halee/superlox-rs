@@ -107,6 +107,7 @@ impl Eq for Number {}
 
 impl FromStr for Number {
     type Err = Error;
+    #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Number(
             f64::from_str(s).with_context(fnerr!("{} (parse) ", s))?,

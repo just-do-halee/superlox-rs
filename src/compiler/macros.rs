@@ -92,6 +92,11 @@ macro_rules! retcursorerr {
 
 #[macro_export]
 macro_rules! push_single_token {
+    (@eof $token:expr, $cursor:expr) => {{
+        let mut eof = $cursor.to_single_token(TokenKind::Eof, TokenLiteral::None);
+        eof.lexeme.clear();
+        $token.push_token(eof);
+    }};
     (
         @flush $token:expr, $cursor:expr, $kind:tt
     ) => {{
@@ -114,15 +119,26 @@ macro_rules! push_single_token {
     ) => {{
         $token.push_token($cursor.to_single_token(TokenKind::$kind, TokenLiteral::$literal));
     }};
-    (@eof $token:expr, $cursor:expr) => {{
-        let mut eof = $cursor.to_single_token(TokenKind::Eof, TokenLiteral::None);
-        eof.lexeme.clear();
-        $token.push_token(eof);
-    }};
 }
 
 #[macro_export]
 macro_rules! push_double_token {
+    (@flush $cursor:expr) => {
+        $cursor.save_offset();
+        $cursor.flush();
+    };
+    (
+        @flush $token:expr, $cursor:expr, $kind:tt
+    ) => {{
+        push_double_token!(@flush $cursor);
+        push_double_token!($token, $cursor, $kind, None)
+    }};
+    (
+        @flush $token:expr, $cursor:expr, $kind:tt, $literal:tt
+    ) => {{
+        push_double_token!(@flush $cursor);
+        push_double_token!($token, $cursor, $kind TokenLiteral::$literal);
+    }};
     (
         $token:expr, $cursor:expr, $kind:tt
     ) => {
@@ -131,8 +147,6 @@ macro_rules! push_double_token {
     (
         $token:expr, $cursor:expr, $kind:tt, $literal:tt
     ) => {{
-        $cursor.save_offset();
-        $cursor.flush();
         $cursor.bump();
         $token.push(TokenKind::$kind, &$cursor, TokenLiteral::$literal);
     }};

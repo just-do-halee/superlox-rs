@@ -27,28 +27,28 @@ pub fn run(source: &Source) -> Result<Tokens> {
 
             ch!(BANG) => {
                 if cursor.first() == ch!(EQUAL) {
-                    push_double_token!(ts, cursor, BangEqual)
+                    push_double_token!(@flush ts, cursor, BangEqual)
                 } else {
                     push_single_token!(@flush ts, cursor, Bang)
                 }
             }
             ch!(EQUAL) => {
                 if cursor.first() == ch!(EQUAL) {
-                    push_double_token!(ts, cursor, EqualEqual)
+                    push_double_token!(@flush ts, cursor, EqualEqual)
                 } else {
                     push_single_token!(@flush ts, cursor, Equal)
                 }
             }
             ch!(LESS) => {
                 if cursor.first() == ch!(EQUAL) {
-                    push_double_token!(ts, cursor, LessEqual)
+                    push_double_token!(@flush ts, cursor, LessEqual)
                 } else {
                     push_single_token!(@flush ts, cursor, Less)
                 }
             }
             ch!(GREATER) => {
                 if cursor.first() == ch!(EQUAL) {
-                    push_double_token!(ts, cursor, GreaterEqual)
+                    push_double_token!(@flush ts, cursor, GreaterEqual)
                 } else {
                     push_single_token!(@flush ts, cursor, Greater)
                 }
@@ -58,9 +58,9 @@ pub fn run(source: &Source) -> Result<Tokens> {
                 match cursor.first() {
                     // line comment
                     ch!(SLASH) => {
-                        while !matches!(cursor.bump(), nl!() | EOF_CHAR) {} // skip comments until it meets a new line
+                        while !matches!(cursor.bump(), nl!() | EOF_CHAR) {} // skip comments until it meets a new line or EOF
                     }
-                    // block comment
+                    // block comment -> /* ... */
                     ch!(STAR) => {
                         cursor.bump();
                         let mut nest_count = 1;
