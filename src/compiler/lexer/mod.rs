@@ -6,6 +6,7 @@ use super::*;
 pub fn run(source: &Source) -> Result<Tokens> {
     let mut ts = Tokens::new();
     let mut cursor = Cursor::new(source);
+
     loop {
         match cursor.bump_without_flush() {
             // without flush -> manually flush
@@ -145,7 +146,7 @@ pub fn run(source: &Source) -> Result<Tokens> {
 
                 let s = cursor.load_str();
 
-                if let Some(keyword) = parse_keyword(s) {
+                if let Some(keyword) = __parse_keyword(s) {
                     ts.push(keyword, &cursor, TokenLiteral::None);
                 } else {
                     ts.push(

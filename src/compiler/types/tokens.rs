@@ -96,7 +96,7 @@ pub static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
 };
 
 #[inline]
-pub fn parse_keyword(keyword: &str) -> Option<TokenKind> {
+pub fn __parse_keyword(keyword: &str) -> Option<TokenKind> {
     KEYWORDS.get(keyword).cloned()
 }
 

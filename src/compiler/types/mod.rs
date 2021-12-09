@@ -13,4 +13,7 @@ pub use cursor::*;
 pub use source::*;
 pub use tokens::*;
 
+mod expr;
+pub use expr::*;
+
 pub type ProcessResult = Result<SourceHeader>;

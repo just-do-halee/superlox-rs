@@ -137,3 +137,36 @@ macro_rules! derive_debug_partials {
         )*
     };
 }
+
+#[macro_export]
+macro_rules! mod_boxed {
+    (@define $ty:tt,) => {
+        pub type $ty = Box<super::$ty>;
+    };
+    (@define $ty:tt, <$($tt:tt),+>) => {
+        pub type $ty<$($tt),+> = Box<super::$ty<$($tt),+>>;
+    };
+    (
+        $([$vis:vis])?
+        $(
+            $name:ident $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        )*
+    ) => {
+        $($vis)? mod boxed {
+            $(
+                 pub type $name$(<$( $lt $( : $clt $(+ $dlt )* )? ),+>)?
+                 = Box<super::$name$(<$( $lt $( : $clt $(+ $dlt )* )? ),+>)?>;
+            )*
+        }
+    };
+}
+#[macro_export]
+macro_rules! pub_mod_boxed {
+    (
+        $(
+            $name:ident $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        )*
+    ) => {
+        mod_boxed!([pub] $($name$(<$( $lt $( : $clt $(+ $dlt )* )? ),+>)?)*);
+    };
+}

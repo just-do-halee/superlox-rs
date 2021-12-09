@@ -9,13 +9,11 @@ mod types;
 use types::*;
 
 mod lexer;
+mod parser;
 
 #[inline]
 pub fn run() -> Vec<ProcessResult> {
-    if ARGS.io.is_some() {
-        // --io <INPUT>
-        vec![process(None)]
-    } else {
+    if ARGS.io.is_none() {
         // files
         collect_src_files!()
             .into_par_iter()
@@ -24,6 +22,9 @@ pub fn run() -> Vec<ProcessResult> {
                 process(Some(path))
             })
             .collect()
+    } else {
+        // --io <INPUT>
+        vec![process(None)]
     }
 }
 

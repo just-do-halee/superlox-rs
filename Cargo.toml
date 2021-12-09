@@ -20,9 +20,7 @@ edition = "2021"
 
 [dependencies]
 
-phf = "0.10"
-
-phf_macros = "0.10"
+phf = { version = "0.10", features = ["macros"] }
 
 console = "0.15"
 
@@ -30,8 +28,8 @@ anyhow = "1.0"
 
 rayon = "1.5"
 
-collectfiles = { path = "/Users/hwakyeom/programs/libs/collectfiles" }
+collectfiles = "1.1"
 
-argone = { path = "/Users/hwakyeom/programs/libs/argone" }
+argone = "0.5"
 
 derive-new = "0.5"

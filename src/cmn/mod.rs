@@ -15,7 +15,7 @@ pub use anyhow::{anyhow, Context, Error, Result};
 
 pub use console::Term;
 
-pub use phf_macros::proc_macro_hack_phf_map as phf_map;
+pub use phf::phf_map;
 
 pub use crate::cli::ARGS;
 
@@ -33,4 +33,9 @@ pub use std::{
 
 lazy_static! {
     pub static ref SRC_DIR: PathBuf = CURRENT_DIR.clone().join("src");
+}
+
+#[inline]
+pub fn __boxed<T>(s: T) -> Box<T> {
+    Box::new(s)
 }

@@ -20,6 +20,8 @@ checksum = "8b26702f315f53b6071259e15dd9d64528213b44d61de1ec926eca7715d62203"
 [[package]]
 name = "argone"
 version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc953c4a61d45604467ed3a6fc1be0f1e087c796513acef0ecc38e68a4057d5d"
 dependencies = [
  "clap",
  "config",
@@ -95,6 +97,8 @@ dependencies = [
 [[package]]
 name = "collectfiles"
 version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "163b4d35544f88a89450b2dae4bc905a8b3b055d93d3ed26e3051695c7303f83"
 dependencies = [
  "rayon",
  "regex",
@@ -355,7 +359,9 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9fc3db1018c4b59d7d582a739436478b6035138b6aecbce989fc91c3e98409f"
 dependencies = [
+ "phf_macros",
  "phf_shared",
+ "proc-macro-hack",
 ]
 
 [[package]]
@@ -608,7 +614,6 @@ dependencies = [
  "console",
  "derive-new",
  "phf",
- "phf_macros",
  "rayon",
 ]
 
