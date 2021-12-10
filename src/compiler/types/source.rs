@@ -91,10 +91,10 @@ impl AsRef<Source> for Source {
 
 impl Source {
     #[inline]
-    pub fn new(body: String) -> Self {
+    pub fn new<S: Into<String>>(body: S) -> Self {
         Source {
             head: SourceHeader::IO,
-            body,
+            body: body.into(),
         }
     }
     #[inline]

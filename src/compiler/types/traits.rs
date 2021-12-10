@@ -21,3 +21,7 @@ pub trait Chopable<'s> {
         spans.into_iter().map(|span| self.chop(span)).collect()
     }
 }
+
+pub trait Visitor<T> {
+    fn visit<E: AsMut<T>>(&self, expr: E);
+}

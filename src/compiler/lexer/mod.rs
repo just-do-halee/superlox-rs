@@ -2,6 +2,9 @@
 
 use super::*;
 
+#[cfg(test)]
+mod tests;
+
 #[inline]
 pub fn run(source: &Source) -> Result<Tokens> {
     let mut ts = Tokens::new();

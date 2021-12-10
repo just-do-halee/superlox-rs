@@ -74,6 +74,18 @@ derive_debug_partials! {
     }
 }
 
+impl Display for TokenLiteral {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TokenLiteral::None => write!(f, "nil"),
+            TokenLiteral::Identifier(i) => write!(f, "{}", i),
+            TokenLiteral::String(s) => write!(f, "{:?}", s),
+            TokenLiteral::Number(n) => write!(f, "{}", n),
+        }
+    }
+}
+
 pub static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
 
         "and"    => TokenKind::And,
@@ -104,6 +116,18 @@ pub fn __parse_keyword(keyword: &str) -> Option<TokenKind> {
 pub struct Number(pub f64);
 
 impl Eq for Number {}
+
+impl Display for Number {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl From<f64> for Number {
+    fn from(f: f64) -> Self {
+        Number(f)
+    }
+}
 
 impl FromStr for Number {
     type Err = Error;
