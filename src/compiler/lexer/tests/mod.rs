@@ -4,7 +4,7 @@
 use super::*;
 
 #[test]
-fn tokenize() {
+fn tokenizing() {
     let source = Source::new(
         r#"
     1 +2;

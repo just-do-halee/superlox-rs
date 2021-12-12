@@ -99,6 +99,16 @@ macro_rules! makeerr {
 }
 
 #[macro_export]
+macro_rules! makeerr_with_kind {
+    ($kind:expr, $err:expr $(,)?) => ({
+        makeerr!(Err::new($err, $kind))
+    });
+    ($kind:expr, $fmt:expr, $($arg:tt)*) => {
+        makeerr!(Err::new(format!($fmt, $($arg)*), $kind))
+    };
+}
+
+#[macro_export]
 macro_rules! reterr {
     ($err:expr $(,)?) => ({
         return Err(makeerr!($err))
@@ -109,9 +119,9 @@ macro_rules! reterr {
 }
 #[macro_export]
 macro_rules! _reterr {
-    ($err:expr $(,)?) => {{
-        return Err($err);
-    }};
+    ($err:expr $(,)?) => {
+        return Err($err)
+    };
 }
 
 #[macro_export]

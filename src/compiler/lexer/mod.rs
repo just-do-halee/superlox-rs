@@ -8,7 +8,7 @@ mod tests;
 #[inline]
 pub fn run(source: &Source) -> Result<Tokens> {
     let mut ts = Tokens::new();
-    let mut cursor = Cursor::new(source);
+    let mut cursor = SourceCursor::new(source);
 
     loop {
         match cursor.bump_without_flush() {
@@ -100,7 +100,7 @@ pub fn run(source: &Source) -> Result<Tokens> {
                 cursor.flush();
                 loop {
                     match cursor.bump() {
-                        EOF_CHAR => retcursorerr!(@load cursor, "Unterminated string."),
+                        EOF_CHAR => reterr!(cursor.to_error_with_load("Unterminated string.")),
                         ch!(DOUBLE_QUOTE) => break,
                         _ => continue,
                     }
@@ -125,7 +125,7 @@ pub fn run(source: &Source) -> Result<Tokens> {
                     cursor.bump();
                 }
 
-                if cursor.current_char() == ch!(DOT) {
+                if *cursor.current() == ch!(DOT) {
                     while cursor.first().is_digit(10) {
                         cursor.bump();
                     }
@@ -166,7 +166,7 @@ pub fn run(source: &Source) -> Result<Tokens> {
             }
             _ => {
                 cursor.flush();
-                retcursorerr!(cursor, "Unexpected character.");
+                cursor.to_error("Unexpected character.");
             }
         }
     }

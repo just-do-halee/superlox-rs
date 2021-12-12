@@ -8,7 +8,9 @@ mod cli;
 mod compiler;
 
 fn main() {
+
     let results = compiler::run();
+
 
     let term = Term::stderr();
 

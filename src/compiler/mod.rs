@@ -36,7 +36,7 @@ pub fn process(some_path: Option<PathBuf>) -> ProcessResult {
             Some(path) => Source::try_from(path)?,
             // --io <INPUT>
             None => match &ARGS.io {
-                Some(input) => Source::new(input.clone()),
+                Some(input) => Source::new(input),
                 None => reterr!("'--io <INPUT>' requires a value."),
             },
         }
@@ -47,6 +47,8 @@ pub fn process(some_path: Option<PathBuf>) -> ProcessResult {
     let out = lexer::run(&source)?;
 
     let out = parser::run(out)?;
+
+    eprintln!("{:#?}", out);
 
     Ok(source.head)
 }

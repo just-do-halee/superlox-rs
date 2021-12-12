@@ -58,9 +58,9 @@ impl SourceHeader {
     /// if given path isn't a file then returns an error.
     #[inline]
     pub fn new(path: PathBuf) -> Self {
-        if let Some(v) = path.file_name() {
+        if let Some(name) = path.file_name() {
             SourceHeader::Header {
-                file_name: v.to_os_string(),
+                file_name: name.to_os_string(),
                 path,
             }
         } else {
@@ -89,13 +89,20 @@ impl AsRef<Source> for Source {
     }
 }
 
-impl Source {
+impl From<&str> for Source {
     #[inline]
-    pub fn new<S: Into<String>>(body: S) -> Self {
+    fn from(s: &str) -> Self {
         Source {
             head: SourceHeader::IO,
-            body: body.into(),
+            body: s.to_string(),
         }
+    }
+}
+
+impl Source {
+    #[inline]
+    pub fn new(body: &str) -> Self {
+        Source::from(body)
     }
     #[inline]
     pub fn len(&self) -> usize {
@@ -206,7 +213,7 @@ impl Display for Offset {
 
 //---------------
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct SourceChunk<'s> {
     pub source: &'s Source, // whole mass
     span: Span,
@@ -227,18 +234,12 @@ impl<'s> fmt::Debug for SourceChunk<'s> {
     }
 }
 
-impl<'s> AsRef<Source> for SourceChunk<'s> {
+impl<'s> FreeErrorConverter for SourceChunk<'s> {
     #[inline]
-    fn as_ref(&self) -> &Source {
-        self.source
-    }
-}
-
-impl<'s> ErrorConverter for SourceChunk<'s> {
-    #[inline]
-    fn to_error<D: Display>(&self, message: D) -> Error {
+    fn to_error_with_kind<D: Display>(&self, kind: ErrKind, message: D) -> Error {
         let Span { start, end } = self.span;
-        makeerr!(
+        makeerr_with_kind!(
+            kind,
             "{n2}\t[{}:{}] {:?}{n3}\t{}{n3}\t->  {}{n2}",
             if start.line != end.line {
                 format!("{}-{}", start.line, end.line)
@@ -275,9 +276,16 @@ impl<'s> SourceChunk<'s> {
         self.span.set_biased_end();
     }
     #[inline]
-    pub fn body(&self) -> &'s str {
+    pub fn body(&self) -> &str {
         let Span { start, end } = self.span;
         &self.source.body[start.pos..end.pos]
+    }
+}
+
+impl<'s> AsRef<Source> for SourceChunk<'s> {
+    #[inline]
+    fn as_ref(&self) -> &Source {
+        self.source
     }
 }
 
@@ -286,14 +294,14 @@ impl<'s> From<&'s Source> for SourceChunk<'s> {
     fn from(source: &'s Source) -> Self {
         SourceChunk {
             source,
-            span: Span::from(0..source.len()),
+            span: Default::default(),
         }
     }
 }
 
-impl<'s> From<&Cursor<'s>> for SourceChunk<'s> {
+impl<'s> From<&SourceCursor<'s>> for SourceChunk<'s> {
     #[inline]
-    fn from(cursor: &Cursor<'s>) -> Self {
+    fn from(cursor: &SourceCursor<'s>) -> Self {
         SourceChunk {
             source: cursor.source,
             span: cursor.load_span(),
@@ -301,9 +309,9 @@ impl<'s> From<&Cursor<'s>> for SourceChunk<'s> {
     }
 }
 
-impl<'s> From<&mut Cursor<'s>> for SourceChunk<'s> {
+impl<'s> From<&mut SourceCursor<'s>> for SourceChunk<'s> {
     #[inline]
-    fn from(cursor: &mut Cursor<'s>) -> Self {
+    fn from(cursor: &mut SourceCursor<'s>) -> Self {
         SourceChunk {
             source: cursor.source,
             span: cursor.load_span(),
@@ -311,9 +319,12 @@ impl<'s> From<&mut Cursor<'s>> for SourceChunk<'s> {
     }
 }
 
-impl<'s> From<Cursor<'s>> for SourceChunk<'s> {
+impl<'s> From<SourceCursor<'s>> for SourceChunk<'s> {
     #[inline]
-    fn from(cursor: Cursor<'s>) -> Self {
-        (&cursor).into()
+    fn from(cursor: SourceCursor<'s>) -> Self {
+        SourceChunk {
+            source: cursor.source,
+            span: cursor.load_span(),
+        }
     }
 }

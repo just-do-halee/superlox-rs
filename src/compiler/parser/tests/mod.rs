@@ -4,7 +4,7 @@
 use super::*;
 
 #[test]
-fn display_expr() {
+fn displaying_expr() {
     let dummy = Source::new("-*");
     let minus = dummy.chop(0..1).unwrap();
     let multi = dummy.chop(1..2).unwrap();

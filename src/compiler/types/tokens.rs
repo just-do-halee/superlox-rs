@@ -69,10 +69,13 @@ derive_debug_partials! {
         pub literal: TokenLiteral,
     }
 
+    #[derive(Clone)]
     pub struct Tokens<'s> {
         pub body: Vec<Token<'s>>,
     }
 }
+
+pub type TokenIntoIter<'s> = IntoIter<Token<'s>>;
 
 impl Display for TokenLiteral {
     #[inline]
@@ -124,6 +127,7 @@ impl Display for Number {
 }
 
 impl From<f64> for Number {
+    #[inline]
     fn from(f: f64) -> Self {
         Number(f)
     }
@@ -152,6 +156,20 @@ impl<'s> Token<'s> {
             literal,
         }
     }
+    #[inline]
+    pub fn into_eof(mut self) -> Self {
+        self.kind = TokenKind::Eof;
+        self.lexeme.clear();
+        self.literal = TokenLiteral::None;
+        self
+    }
+}
+
+impl<'s> FreeErrorConverter for Token<'s> {
+    #[inline]
+    fn to_error_with_kind<D: Display>(&self, kind: ErrKind, message: D) -> Error {
+        self.lexeme.to_error_with_kind(kind, message)
+    }
 }
 
 impl<'s> Tokens<'s> {
@@ -176,10 +194,28 @@ impl<'s> Tokens<'s> {
     }
 }
 
+impl<'s> AsRef<Tokens<'s>> for Tokens<'s> {
+    #[inline]
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
+
 impl<'s> From<Vec<Token<'s>>> for Tokens<'s> {
     #[inline]
     fn from(body: Vec<Token<'s>>) -> Self {
         Self { body }
+    }
+}
+
+impl<'s> IntoIterator for Tokens<'s> {
+    type Item = Token<'s>;
+
+    type IntoIter = IntoIter<Self::Item>;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.body.into_iter()
     }
 }
 

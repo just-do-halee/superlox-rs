@@ -12,12 +12,13 @@ derive_debug_partials! {
 impl<'s> Visitor<Expr<'s>> for ExprVisitor {
     fn visit<E: AsMut<Expr<'s>>>(&self, mut expr: E) {
         match expr.as_mut() {
-            Expr::Binary(l_e, t, r_e) => {
+            Expr::Binary(_l_e, _t, _r_e) => {
                 // self.visit(l_e);
             }
-            Expr::Grouping(e) => {}
-            Expr::Literal(l) => {}
-            Expr::Unary(t, e) => {}
+            Expr::Grouping(_e) => {}
+            Expr::Literal(_l) => {}
+            Expr::Unary(_t, _e) => {}
+            Expr::None => {}
         }
     }
 }

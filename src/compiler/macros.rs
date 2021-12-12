@@ -75,22 +75,6 @@ macro_rules! chs {
 }
 
 #[macro_export]
-macro_rules! retcursorerr {
-    (@load $cursor:expr, $literal:literal) => {
-        _reterr!(SourceChunk::from(&$cursor).to_error($literal))
-    };
-    (@load $cursor:expr, $fmt:literal, $($expr:expr),*) => {
-        _reterr!(SourceChunk::from(&$cursor).to_error(format!($fmt, $($expr),*)))
-    };
-    ($cursor:expr, $literal:literal) => {
-        _reterr!($cursor.to_single_chunk().to_error($literal))
-    };
-    ($cursor:expr, $fmt:literal, $($expr:expr),*) => {
-        _reterr!($cursor.to_single_chunk().to_error(format!($fmt, $($expr),*)))
-    };
-}
-
-#[macro_export]
 macro_rules! push_single_token {
     (@eof $token:expr, $cursor:expr) => {{
         let mut eof = $cursor.to_single_token(TokenKind::Eof, TokenLiteral::None);
@@ -117,16 +101,17 @@ macro_rules! push_single_token {
     (
         $token:expr, $cursor:expr, $kind:tt, $literal:tt
     ) => {{
-        $token.push_token($cursor.to_single_token(TokenKind::$kind, TokenLiteral::$literal));
+        let token = $cursor.to_single_token(TokenKind::$kind, TokenLiteral::$literal);
+        $token.push_token(token);
     }};
 }
 
 #[macro_export]
 macro_rules! push_double_token {
-    (@flush $cursor:expr) => {
+    (@flush $cursor:expr) => {{
         $cursor.save_offset();
         $cursor.flush();
-    };
+    }};
     (
         @flush $token:expr, $cursor:expr, $kind:tt
     ) => {{
@@ -155,13 +140,13 @@ macro_rules! push_double_token {
 #[macro_export]
 macro_rules! impl_ {
     (
-        Chopable<$lt:lifetime> for $name:ty
+        Chopable$(<$lt:lifetime>)? for $name:ty
     ) => {
-        impl<$lt> Chopable<$lt> for $name {
-            type Out = SourceChunk<$lt>;
+        impl$(<$lt>)? Chopable$(<$lt>)? for $name {
+            type Out = SourceChunk$(<$lt>)?;
             /// `out of bounds == None`
             #[inline]
-            fn chop<A: Into<Span>>(&$lt self, span: A) -> Option<Self::Out> {
+            fn chop<A: Into<Span>>(&$($lt)?self, span: A) -> Option<Self::Out> {
                 SourceChunk::new(self.as_ref(), span)
             }
         }

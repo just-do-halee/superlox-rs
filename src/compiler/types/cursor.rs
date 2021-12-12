@@ -1,9 +1,12 @@
 // Copyright 2021 Hwakyeom Kim(=just-do-halee)
 
+//! 1. SourceCursor
+//! 2. TokenCursor
+
 use super::*;
 
 #[derive(Clone)]
-pub struct Cursor<'s> {
+pub struct SourceCursor<'s> {
     pub source: &'s Source,
     chars: Chars<'s>,
     offset: Offset,
@@ -11,13 +14,13 @@ pub struct Cursor<'s> {
     current_char: char,
 }
 
-impl<'s> Display for Cursor<'s> {
+impl<'s> Display for SourceCursor<'s> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} {}", self.offset, self.current_char)
     }
 }
-impl<'s> fmt::Debug for Cursor<'s> {
+impl<'s> fmt::Debug for SourceCursor<'s> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
@@ -31,22 +34,60 @@ impl<'s> fmt::Debug for Cursor<'s> {
     }
 }
 
-impl<'s> Cursor<'s> {
+impl<'s> Cursor for SourceCursor<'s> {
+    type Item = char;
+
+    type Iter = Chars<'s>;
+
+    #[inline]
+    fn EOF(&self) -> Self::Item {
+        EOF_CHAR
+    }
+
+    #[inline]
+    fn clone_items(&self) -> Self::Iter {
+        self.chars.clone()
+    }
+
+    #[inline]
+    fn current(&mut self) -> &mut Self::Item {
+        &mut self.current_char
+    }
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        self.chars.next()
+    }
+
+    #[inline]
+    fn flush(&mut self) {
+        let c = self.current_char;
+
+        if c != EOF_CHAR && self.offset.pos < self.source.len() {
+            self.offset.pos += 1;
+
+            // new line
+            if c == '\n' {
+                self.offset.line += 1;
+                self.offset.column = 0; // reset
+            } else {
+                self.offset.column += 1;
+            }
+        }
+    }
+}
+
+impl<'s> SourceCursor<'s> {
     #[inline]
     pub fn new<S: Into<SourceChunk<'s>>>(chunk: S) -> Self {
         let chunk = chunk.into();
-        Cursor {
+        SourceCursor {
             source: chunk.source,
             chars: chunk.source.chars(),
             offset: chunk.span().start,
             saved_offset: chunk.span().start,
             current_char: EOF_CHAR,
         }
-    }
-
-    #[inline]
-    pub fn current_char(&self) -> char {
-        self.current_char
     }
 
     #[inline]
@@ -95,77 +136,75 @@ impl<'s> Cursor<'s> {
     }
 
     #[inline]
-    fn next(&mut self) -> char {
-        self.chars.next().unwrap_or(EOF_CHAR)
-    }
-
-    /// moves to the next character
-    #[inline]
-    pub fn bump(&mut self) -> char {
-        self.current_char = self.next();
-        self.flush()
-    }
-
-    /// moves to the next character
-    /// without flushing [pos/line/column]
-    #[inline]
-    pub fn bump_without_flush(&mut self) -> char {
-        let c = self.next();
-        self.current_char = c;
-        c
-    }
-
-    #[inline]
-    pub fn flush(&mut self) -> char {
-        let c = self.current_char;
-
-        if c != EOF_CHAR && self.offset.pos < self.source.len() {
-            self.offset.pos += 1;
-
-            // new line
-            if c == '\n' {
-                self.offset.line += 1;
-                self.offset.column = 0; // reset
-            } else {
-                self.offset.column += 1;
-            }
-        }
-        c
-    }
-
-    /// returns a `Chars` iterator over the remaining characters
-    #[inline]
-    fn chars(&self) -> Chars<'s> {
-        self.chars.clone()
-    }
-
-    /// returns nth character relative to the current cursor position
-    /// if requested position doesn't exist, `EOF_CHAR` is returned
-    /// however, getting `EOF_CHAR` doesn't always mean actual end of file
-    /// it should be checked with `is_eof` method
-    #[inline]
-    fn nth_char(&self, n: usize) -> char {
-        self.chars().nth(n).unwrap_or(EOF_CHAR)
-    }
-
-    /// peeks the next symbol from the input stream without consuming it
-    #[inline]
-    pub fn first(&self) -> char {
-        self.nth_char(0)
-    }
-
-    /// peeks the second symbol from the input stream without consuming it
-    // #[inline]
-    // pub fn second(&self) -> char {
-    //     self.nth_char(1)
-    // }
-
-    #[inline]
     pub fn preserved(&self) -> &str {
         &self.source.body[0..self.offset.pos - 1]
     }
     #[inline]
     pub fn remains(&self) -> &str {
         &self.source.body[self.offset.pos..self.source.len()]
+    }
+
+    #[inline]
+    pub fn to_error_with_load<D: Display>(&self, message: D) -> Error {
+        SourceChunk::from(self).to_error_with_kind(ErrKind::Cursor, message)
+    }
+}
+
+impl<'s> ErrorConverter for SourceCursor<'s> {
+    #[inline]
+    fn to_error<D: Display>(&self, message: D) -> Error {
+        self.to_single_chunk().to_error_with_kind(ErrKind::Cursor, message)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TokenCursor<'s> {
+    it: TokenIntoIter<'s>,
+    current: Token<'s>,
+    eof: Token<'s>,
+}
+
+impl<'s> Cursor for TokenCursor<'s> {
+    type Item = Token<'s>;
+    type Iter = TokenIntoIter<'s>;
+
+    #[inline]
+    fn EOF(&self) -> Self::Item {
+        self.eof.clone()
+    }
+
+    #[inline]
+    fn clone_items(&self) -> Self::Iter {
+        self.it.clone()
+    }
+
+    #[inline]
+    fn current(&mut self) -> &mut Self::Item {
+        &mut self.current
+    }
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        self.it.next()
+    }
+
+    #[inline]
+    fn flush(&mut self) {}
+}
+
+impl<'s> TokenCursor<'s> {
+    #[inline]
+    pub fn new<T: Into<Tokens<'s>>>(tokens: T) -> Result<Self> {
+        let tokens = tokens.into();
+        if tokens.is_empty() {
+            reterr!("empty token list")
+        } else {
+            let eof = tokens[0].clone().into_eof();
+            Ok(Self {
+                it: tokens.into_iter(),
+                current: eof.clone(),
+                eof,
+            })
+        }
     }
 }

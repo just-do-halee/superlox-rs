@@ -21,7 +21,7 @@ pub use crate::cli::ARGS;
 
 pub use std::{
     collections::HashMap,
-    env,
+    env, error,
     ffi::{OsStr, OsString},
     fmt::{self, Display},
     fs::{self, File},
@@ -29,6 +29,7 @@ pub use std::{
     ops::{Deref, DerefMut, Range},
     path::{Path, PathBuf},
     str::{Chars, FromStr},
+    vec::IntoIter,
 };
 
 lazy_static! {
