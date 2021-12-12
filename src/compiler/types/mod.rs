@@ -2,21 +2,19 @@
 
 use super::*;
 
-mod errors;
-mod traits;
-pub use errors::*;
-pub use traits::*;
+mod system;
+pub use system::*;
 
 mod cursor;
 mod source;
-mod tokens;
+mod token;
 pub use cursor::*;
 pub use source::*;
-pub use tokens::*;
+pub use token::*;
 
 mod expr;
-mod visitors;
+mod visitor;
 pub use expr::*;
-pub use visitors::*;
+pub use visitor::*;
 
 pub type ProcessResult = Result<SourceHeader>;
