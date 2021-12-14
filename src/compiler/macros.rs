@@ -86,7 +86,7 @@ macro_rules! chs {
 #[macro_export]
 macro_rules! push_single_token {
     (@eof $token:expr, $cursor:expr) => {{
-        let mut eof = $cursor.to_single_token(TokenKind::Eof, TokenLiteral::None);
+        let mut eof = $cursor.to_single_token(TokenKind::Eof, None);
         eof.lexeme.clear();
         $token.push_token(eof);
     }};
@@ -110,7 +110,7 @@ macro_rules! push_single_token {
     (
         $token:expr, $cursor:expr, $kind:tt, $literal:tt
     ) => {{
-        let token = $cursor.to_single_token(TokenKind::$kind, TokenLiteral::$literal);
+        let token = $cursor.to_single_token(TokenKind::$kind, $literal);
         $token.push_token(token);
     }};
 }
@@ -131,7 +131,7 @@ macro_rules! push_double_token {
         @flush $token:expr, $cursor:expr, $kind:tt, $literal:tt
     ) => {{
         push_double_token!(@flush $cursor);
-        push_double_token!($token, $cursor, $kind TokenLiteral::$literal);
+        push_double_token!($token, $cursor, $kind $literal);
     }};
     (
         $token:expr, $cursor:expr, $kind:tt
@@ -142,7 +142,7 @@ macro_rules! push_double_token {
         $token:expr, $cursor:expr, $kind:tt, $literal:tt
     ) => {{
         $cursor.bump();
-        $token.push(TokenKind::$kind, &$cursor, TokenLiteral::$literal);
+        $token.push(TokenKind::$kind, &$cursor, $literal);
     }};
 }
 

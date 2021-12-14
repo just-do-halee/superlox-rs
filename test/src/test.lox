@@ -1,0 +1,21 @@
+
+    1 +2;
+    print 2 + 1;
+    print "one";
+    print true;
+
+    if () {}
+    /* U(Uj#$*()@#)(@!#&%#%NM) This is Line Comment */ 
+
+    if (1 != 2) {
+        print "yes";
+    }
+
+    /* Ha This is Block Comment
+
+    H
+    a
+    wefwkljf mgekrlgmekrlmekrlgmerg
+    mwifmweoifmwekfm
+    ;,;d bmeiorbmeirom*(&#%(*@&%*(@u @)_%()_KGKLJGM))*/
+    

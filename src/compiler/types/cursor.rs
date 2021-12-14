@@ -127,12 +127,8 @@ impl<'s> SourceCursor<'s> {
     }
 
     #[inline]
-    pub fn to_single_token(&self, kind: TokenKind, literal: TokenLiteral) -> Token<'s> {
-        Token {
-            kind,
-            lexeme: self.to_single_chunk(),
-            literal,
-        }
+    pub fn to_single_token(&self, kind: TokenKind, literal: Option<&str>) -> Token<'s> {
+        Token::new(kind, self.to_single_chunk(), literal)
     }
 
     #[inline]
@@ -153,7 +149,8 @@ impl<'s> SourceCursor<'s> {
 impl<'s> ErrorConverter for SourceCursor<'s> {
     #[inline]
     fn to_error<D: Display>(&self, message: D) -> Error {
-        self.to_single_chunk().to_error_with_kind(ErrKind::Cursor, message)
+        self.to_single_chunk()
+            .to_error_with_kind(ErrKind::Cursor, message)
     }
 }
 

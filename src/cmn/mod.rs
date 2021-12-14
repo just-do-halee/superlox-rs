@@ -20,11 +20,13 @@ pub use phf::phf_map;
 pub use crate::cli::ARGS;
 
 pub use std::{
+    cmp::*,
     collections::HashMap,
     env, error,
     ffi::{OsStr, OsString},
     fmt::{self, Display},
     fs::{self, File},
+    hash::{Hash, Hasher},
     io::{self, BufWriter, Write},
     ops::{Deref, DerefMut, Range},
     path::{Path, PathBuf},

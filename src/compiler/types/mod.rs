@@ -5,6 +5,11 @@ use super::*;
 mod system;
 pub use system::*;
 
+mod number;
+mod object;
+pub use number::*;
+pub use object::*;
+
 mod cursor;
 mod source;
 mod token;

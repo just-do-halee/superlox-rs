@@ -11,12 +11,13 @@ fn displaying_expr() {
 
     let expr = Expr::Binary(
         Expr::Unary(
-            Token::new(TokenKind::Minus, minus, TokenLiteral::None),
-            Expr::Literal(TokenLiteral::Number(123f64.into())).into(),
+            Token::new(TokenKind::Minus, minus, None),
+            Expr::Literal(TokenLiteral::new(Object::Number(123f64.into()))).into(),
         )
         .into(),
-        Token::new(TokenKind::Star, multi, TokenLiteral::None),
-        Expr::Grouping(Expr::Literal(TokenLiteral::String(45.67.to_string())).into()).into(),
+        Token::new(TokenKind::Star, multi, None),
+        Expr::Grouping(Expr::Literal(TokenLiteral::new(Object::String(45.67.to_string()))).into())
+            .into(),
     );
 
     assert_eq!(expr.to_string(), "(* (- 123) (group \"45.67\"))");

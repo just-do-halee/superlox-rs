@@ -38,11 +38,7 @@ fn tokenizing() {
         Token {
             kind: Number,
             lexeme: "1",
-            literal: Number(
-                Number(
-                    1.0,
-                ),
-            ),
+            literal: Number(1.0),
         },
         Token {
             kind: Plus,
@@ -52,11 +48,7 @@ fn tokenizing() {
         Token {
             kind: Number,
             lexeme: "2",
-            literal: Number(
-                Number(
-                    2.0,
-                ),
-            ),
+            literal: Number(2.0),
         },
         Token {
             kind: Semicolon,
@@ -71,11 +63,7 @@ fn tokenizing() {
         Token {
             kind: Number,
             lexeme: "2",
-            literal: Number(
-                Number(
-                    2.0,
-                ),
-            ),
+            literal: Number(2.0),
         },
         Token {
             kind: Plus,
@@ -85,11 +73,7 @@ fn tokenizing() {
         Token {
             kind: Number,
             lexeme: "1",
-            literal: Number(
-                Number(
-                    1.0,
-                ),
-            ),
+            literal: Number(1.0),
         },
         Token {
             kind: Semicolon,
@@ -104,9 +88,7 @@ fn tokenizing() {
         Token {
             kind: String,
             lexeme: "\"one\"",
-            literal: String(
-                "one",
-            ),
+            literal: String("one"),
         },
         Token {
             kind: Semicolon,
@@ -121,7 +103,7 @@ fn tokenizing() {
         Token {
             kind: True,
             lexeme: "true",
-            literal: None,
+            literal: Boolean(true),
         },
         Token {
             kind: Semicolon,
@@ -166,11 +148,7 @@ fn tokenizing() {
         Token {
             kind: Number,
             lexeme: "1",
-            literal: Number(
-                Number(
-                    1.0,
-                ),
-            ),
+            literal: Number(1.0),
         },
         Token {
             kind: BangEqual,
@@ -180,11 +158,7 @@ fn tokenizing() {
         Token {
             kind: Number,
             lexeme: "2",
-            literal: Number(
-                Number(
-                    2.0,
-                ),
-            ),
+            literal: Number(2.0),
         },
         Token {
             kind: RightParen,
@@ -204,9 +178,7 @@ fn tokenizing() {
         Token {
             kind: String,
             lexeme: "\"yes\"",
-            literal: String(
-                "yes",
-            ),
+            literal: String("yes"),
         },
         Token {
             kind: Semicolon,

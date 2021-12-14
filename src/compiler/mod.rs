@@ -48,7 +48,7 @@ pub fn process(some_path: Option<PathBuf>) -> ProcessResult {
 
     let out = parser::run(out)?;
 
-    eprintln!("{:#?}", out);
+    eprintln!("{}", out);
 
     Ok(source.head)
 }

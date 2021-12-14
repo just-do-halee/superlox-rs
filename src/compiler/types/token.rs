@@ -58,14 +58,6 @@ derive_debug_partials! {
     }
 
     #[derive(Clone)]
-    pub enum TokenLiteral {
-        Identifier(String),
-        String(String),
-        Number(Number),
-        None,
-    }
-
-    #[derive(Clone)]
     pub struct Token<'s> {
         pub kind: TokenKind,
         pub lexeme: SourceChunk<'s>,
@@ -78,19 +70,10 @@ derive_debug_partials! {
     }
 }
 
-pub type TokenIntoIter<'s> = IntoIter<Token<'s>>;
+#[derive(PartialEq, Eq, Clone, new)]
+pub struct TokenLiteral(Object);
 
-impl Display for TokenLiteral {
-    #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            TokenLiteral::None => write!(f, "nil"),
-            TokenLiteral::Identifier(i) => write!(f, "{}", i),
-            TokenLiteral::String(s) => write!(f, "{:?}", s),
-            TokenLiteral::Number(n) => write!(f, "{}", n),
-        }
-    }
-}
+pub type TokenIntoIter<'s> = IntoIter<Token<'s>>;
 
 pub static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
 
@@ -118,31 +101,22 @@ pub fn __parse_keyword(keyword: &str) -> Option<TokenKind> {
     KEYWORDS.get(keyword).cloned()
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub struct Number(pub f64);
-
-impl Eq for Number {}
-
-impl Display for Number {
+impl fmt::Debug for TokenLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+impl Display for TokenLiteral {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl From<f64> for Number {
+impl Deref for TokenLiteral {
+    type Target = Object;
     #[inline]
-    fn from(f: f64) -> Self {
-        Number(f)
-    }
-}
-
-impl FromStr for Number {
-    type Err = Error;
-    #[inline]
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Number(
-            f64::from_str(s).with_context(fnerr!("{} (parse) ", s))?,
-        ))
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -151,19 +125,20 @@ impl<'s> Token<'s> {
     pub fn new<S: Into<SourceChunk<'s>>>(
         kind: TokenKind,
         lexeme: S,
-        literal: TokenLiteral,
+        literal: Option<&str>,
     ) -> Self {
+        let object = Object::try_from((kind, literal)).unwrap();
         Token {
             kind,
             lexeme: lexeme.into(),
-            literal,
+            literal: TokenLiteral(object),
         }
     }
     #[inline]
     pub fn into_eof(mut self) -> Self {
         self.kind = TokenKind::Eof;
         self.lexeme.clear();
-        self.literal = TokenLiteral::None;
+        self.literal = TokenLiteral(Object::None);
         self
     }
 }
@@ -185,7 +160,7 @@ impl<'s> Tokens<'s> {
         &mut self,
         kind: TokenKind,
         lexeme: S,
-        literal: TokenLiteral,
+        literal: Option<&str>,
     ) -> &mut Self {
         self.body.push(Token::new(kind, lexeme, literal));
         self

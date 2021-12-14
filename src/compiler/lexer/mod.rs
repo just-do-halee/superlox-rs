@@ -112,11 +112,7 @@ pub fn run(source: &Source) -> Result<Tokens> {
                 let s = cursor.load_str();
                 let literal = &s[1..s.len() - 1];
 
-                ts.push(
-                    TokenKind::String,
-                    &cursor,
-                    TokenLiteral::String(literal.to_string()),
-                );
+                ts.push(TokenKind::String, &cursor, Some(literal));
             }
 
             // number literals
@@ -134,11 +130,7 @@ pub fn run(source: &Source) -> Result<Tokens> {
                     }
                 }
 
-                ts.push(
-                    TokenKind::Number,
-                    &cursor,
-                    TokenLiteral::Number(Number::from_str(cursor.load_str())?),
-                );
+                ts.push(TokenKind::Number, &cursor, Some(cursor.load_str()));
             }
 
             // identifiers or keywords
@@ -153,13 +145,9 @@ pub fn run(source: &Source) -> Result<Tokens> {
                 let s = cursor.load_str();
 
                 if let Some(keyword) = __parse_keyword(s) {
-                    ts.push(keyword, &cursor, TokenLiteral::None);
+                    ts.push(keyword, &cursor, None);
                 } else {
-                    ts.push(
-                        TokenKind::Identifier,
-                        &cursor,
-                        TokenLiteral::Identifier(s.to_string()),
-                    );
+                    ts.push(TokenKind::Identifier, &cursor, Some(s));
                 }
             }
 
