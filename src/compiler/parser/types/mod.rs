@@ -71,7 +71,19 @@ impl<'s> Parser<'s> for TokenParser<'s> {
 
     #[inline]
     fn expression(&mut self) -> Result<Expr<'s>> {
-        self.equality()
+        // + comma expressions
+        // TODO: make an exception function call's argument list
+        let mut expr = self.equality()?;
+
+        while self.cursor.first().kind == TokenKind::Comma {
+            self.cursor.bump();
+            let left = expr.into();
+            let right = self.equality()?.into();
+
+            expr = Expr::Comma(left, right);
+        }
+
+        Ok(expr)
     }
 
     #[inline]
@@ -91,12 +103,29 @@ impl<'s> Parser<'s> for TokenParser<'s> {
 
     #[inline]
     fn comparison(&mut self) -> Result<Expr<'s>> {
-        let mut expr = self.term()?;
+        let mut expr = self.bitwise()?;
 
         while let TokenKind::Less
         | TokenKind::LessEqual
         | TokenKind::Greater
         | TokenKind::GreaterEqual = self.cursor.first().kind
+        {
+            let left = expr.into();
+            let operator = self.cursor.bump();
+            let right = self.bitwise()?.into();
+
+            expr = Expr::Binary(left, operator, right);
+        }
+
+        Ok(expr)
+    }
+
+    #[inline]
+    fn bitwise(&mut self) -> Result<Expr<'s>> {
+        let mut expr = self.term()?;
+
+        while let TokenKind::Ampersand | TokenKind::VerticalBar | TokenKind::Circumflex =
+            self.cursor.first().kind
         {
             let left = expr.into();
             let operator = self.cursor.bump();

@@ -17,6 +17,9 @@ derive_debug_partials! {
         Semicolon,
         Slash,
         Star,
+        Ampersand,
+        VerticalBar,
+        Circumflex,
 
         // One or two character tokens.
         Bang,

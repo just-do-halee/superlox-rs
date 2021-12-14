@@ -56,6 +56,15 @@ macro_rules! ch {
     (UNDERSCORE) => {
         '_'
     };
+    (AMPERSAND) => {
+        '&'
+    };
+    (VERTICAL_BAR) => {
+        '|'
+    };
+    (CIRCUMFLEX) => {
+        '^'
+    };
 }
 
 #[macro_export]

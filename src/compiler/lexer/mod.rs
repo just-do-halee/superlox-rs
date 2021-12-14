@@ -28,6 +28,9 @@ pub fn run(source: &Source) -> Result<Tokens> {
             ch!(PLUS) => push_single_token!(@flush ts, cursor, Plus),
             ch!(SEMICOLON) => push_single_token!(@flush ts, cursor, Semicolon),
             ch!(STAR) => push_single_token!(@flush ts, cursor, Star),
+            ch!(AMPERSAND) => push_single_token!(@flush ts, cursor, Ampersand),
+            ch!(VERTICAL_BAR) => push_single_token!(@flush ts, cursor, VerticalBar),
+            ch!(CIRCUMFLEX) => push_single_token!(@flush ts, cursor, Circumflex),
 
             ch!(BANG) => {
                 if cursor.first() == ch!(EQUAL) {

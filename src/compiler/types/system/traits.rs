@@ -124,6 +124,7 @@ pub trait Parser<'s> {
     fn expression(&mut self) -> Result<Expr<'s>>;
     fn equality(&mut self) -> Result<Expr<'s>>;
     fn comparison(&mut self) -> Result<Expr<'s>>;
+    fn bitwise(&mut self) -> Result<Expr<'s>>;
     fn term(&mut self) -> Result<Expr<'s>>;
     fn factor(&mut self) -> Result<Expr<'s>>;
     fn unary(&mut self) -> Result<Expr<'s>>;

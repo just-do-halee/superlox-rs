@@ -18,6 +18,7 @@ impl<'s> Visitor<Expr<'s>> for ExprVisitor {
             Expr::Grouping(_e) => {}
             Expr::Literal(_l) => {}
             Expr::Unary(_t, _e) => {}
+            Expr::Comma(_l_e, _r_e) => {}
             Expr::None => {}
         }
     }

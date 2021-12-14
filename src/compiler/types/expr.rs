@@ -12,6 +12,7 @@ derive_debug_partials! {
         Grouping(boxed::Expr<'s>),
         Literal(TokenLiteral),
         Unary(Token<'s>, boxed::Expr<'s>),
+        Comma(boxed::Expr<'s>, boxed::Expr<'s>),
         None,
     }
 
@@ -31,6 +32,9 @@ impl<'s> Display for Expr<'s> {
             }
             Expr::Unary(t, e) => {
                 write!(f, "({} {})", t.lexeme, e)
+            }
+            Expr::Comma(l_e, r_e) => {
+                write!(f, "{}, {}", l_e, r_e)
             }
             Expr::None => write!(f, ""),
         }
