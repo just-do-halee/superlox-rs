@@ -28,7 +28,7 @@ pub use std::{
     fs::{self, File},
     hash::{Hash, Hasher},
     io::{self, BufWriter, Write},
-    ops::{Deref, DerefMut, Range},
+    ops::{self, Deref, DerefMut, Range},
     path::{Path, PathBuf},
     str::{Chars, FromStr},
     vec::IntoIter,

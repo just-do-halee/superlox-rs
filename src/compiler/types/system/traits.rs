@@ -95,8 +95,20 @@ pub trait Cursor {
     }
 }
 
-pub trait Visitor<T> {
-    fn visit<E: AsMut<T>>(&self, expr: E);
+pub trait AsObject {
+    fn as_object(&self) -> &Object;
+    fn to_object(&self) -> Object;
+    #[inline]
+    fn into_object(self) -> Object
+    where
+        Self: Sized,
+    {
+        self.to_object()
+    }
+}
+
+pub trait Visitor<I, O> {
+    fn visit(&self, e: I) -> O;
 }
 
 pub type Caught = bool;

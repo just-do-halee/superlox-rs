@@ -12,10 +12,17 @@ derive_debug_partials! {
         Grouping(boxed::Expr<'s>),
         Literal(TokenLiteral),
         Unary(Token<'s>, boxed::Expr<'s>),
-        Comma(boxed::Expr<'s>, boxed::Expr<'s>),
+        Comma(Vec<Expr<'s>>),
         None,
     }
 
+}
+
+impl<'s> AsRef<Expr<'s>> for Expr<'s> {
+    #[inline]
+    fn as_ref(&self) -> &Expr<'s> {
+        self
+    }
 }
 
 impl<'s> Display for Expr<'s> {
@@ -33,8 +40,15 @@ impl<'s> Display for Expr<'s> {
             Expr::Unary(t, e) => {
                 write!(f, "({} {})", t.lexeme, e)
             }
-            Expr::Comma(l_e, r_e) => {
-                write!(f, "{}, {}", l_e, r_e)
+            Expr::Comma(v) => {
+                let mut it = v.iter();
+                write!(f, "{}", it.next().unwrap())?;
+
+                for e in it {
+                    write!(f, ", {}", e)?
+                }
+
+                Ok(())
             }
             Expr::None => write!(f, ""),
         }

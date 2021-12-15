@@ -5,6 +5,7 @@ use super::*;
 derive_debug_partials! {
     #[derive(Clone)]
     pub enum Object {
+        TempArray(Vec<Object>),
         Identifier(String),
         String(String),
         Number(Number),
@@ -14,10 +15,40 @@ derive_debug_partials! {
     }
 }
 
+impl From<Object> for bool {
+    #[inline]
+    fn from(o: Object) -> Self {
+        match o {
+            Object::Nil | Object::None => false,
+            Object::Boolean(b) => b,
+            _ => true,
+        }
+    }
+}
+
+impl ops::Not for Object {
+    type Output = Object;
+    #[inline]
+    fn not(self) -> Self::Output {
+        let res: bool = self.into();
+        Object::Boolean(!res)
+    }
+}
+
 impl Display for Object {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::TempArray(v) => {
+                let mut it = v.iter();
+                write!(f, "{}", it.next().unwrap())?;
+
+                for o in it {
+                    write!(f, ", {}", o)?
+                }
+
+                Ok(())
+            }
             Object::Identifier(v) => write!(f, "{}", v),
             Object::String(v) => write!(f, "{:?}", v),
             Object::Number(v) => write!(f, "{}", v),

@@ -9,11 +9,11 @@ mod types;
 use types::*;
 
 #[inline]
-pub fn run(tokens: Tokens) -> Result<Expr> {
+pub fn run(tokens: Tokens) -> Result<Object> {
     let (caught, res) = TokenParser::new(tokens)?.parse();
     if caught {
         reterr!("caught errors")
     } else {
-        res
+        ExprVisitor.visit(res?)
     }
 }

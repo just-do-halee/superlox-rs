@@ -71,7 +71,7 @@ derive_debug_partials! {
 }
 
 #[derive(PartialEq, Eq, Clone, new)]
-pub struct TokenLiteral(Object);
+pub struct TokenLiteral(pub Object);
 
 pub type TokenIntoIter<'s> = IntoIter<Token<'s>>;
 
@@ -117,6 +117,15 @@ impl Deref for TokenLiteral {
     #[inline]
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl AsObject for TokenLiteral {
+    fn as_object(&self) -> &Object {
+        &self.0
+    }
+    fn to_object(&self) -> Object {
+        self.0.clone()
     }
 }
 

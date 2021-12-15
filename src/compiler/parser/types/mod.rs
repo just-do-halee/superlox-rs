@@ -73,17 +73,21 @@ impl<'s> Parser<'s> for TokenParser<'s> {
     fn expression(&mut self) -> Result<Expr<'s>> {
         // + comma expressions
         // TODO: make an exception function call's argument list
-        let mut expr = self.equality()?;
+        let expr = self.equality()?;
 
-        while self.cursor.first().kind == TokenKind::Comma {
+        Ok(if self.cursor.first().kind == TokenKind::Comma {
             self.cursor.bump();
-            let left = expr.into();
-            let right = self.equality()?.into();
+            let mut vec = vec![expr, self.equality()?];
 
-            expr = Expr::Comma(left, right);
-        }
+            while self.cursor.first().kind == TokenKind::Comma {
+                self.cursor.bump();
+                vec.push(self.equality()?);
+            }
 
-        Ok(expr)
+            Expr::Comma(vec)
+        } else {
+            expr
+        })
     }
 
     #[inline]
