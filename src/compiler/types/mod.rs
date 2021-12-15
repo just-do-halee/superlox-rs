@@ -2,13 +2,10 @@
 
 use super::*;
 
-mod system;
-pub use system::*;
-
-mod number;
-mod object;
-pub use number::*;
-pub use object::*;
+mod err;
+mod traits;
+pub use err::*;
+pub use traits::*;
 
 mod cursor;
 mod source;
@@ -16,6 +13,11 @@ mod token;
 pub use cursor::*;
 pub use source::*;
 pub use token::*;
+
+mod number;
+mod object;
+pub use number::*;
+pub use object::*;
 
 mod expr;
 mod visitor;
