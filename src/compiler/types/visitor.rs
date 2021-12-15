@@ -24,7 +24,7 @@ where
                 let kind = token.kind;
 
                 match (left, right, kind) {
-                    (l, r, TokenKind::EqualEqual) => Object::Boolean(l != r),
+                    (l, r, TokenKind::EqualEqual) => Object::Boolean(l == r),
                     (l, r, TokenKind::BangEqual) => Object::Boolean(l != r),
 
                     (Object::String(left), Object::String(right), _) => match kind {

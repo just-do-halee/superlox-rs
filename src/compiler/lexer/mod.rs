@@ -124,7 +124,8 @@ pub fn run(source: &Source) -> Result<Tokens> {
                     cursor.bump();
                 }
 
-                if *cursor.current() == ch!(DOT) {
+                if cursor.first() == ch!(DOT) {
+                    cursor.bump();
                     while cursor.first().is_digit(10) {
                         cursor.bump();
                     }
