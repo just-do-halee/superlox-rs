@@ -152,10 +152,10 @@ impl<'s> Token<'s> {
     }
 }
 
-impl<'s> FreeErrorConverter for Token<'s> {
+impl<'s> ErrorConverter for Token<'s> {
     #[inline]
-    fn to_error_with_kind<D: Display>(&self, kind: ErrKind, message: D) -> Error {
-        self.lexeme.to_error_with_kind(kind, message)
+    fn to_error(&self, opt: ErrOpt) -> Error {
+        self.lexeme.to_error(opt)
     }
 }
 

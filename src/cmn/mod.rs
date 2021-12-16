@@ -13,7 +13,7 @@ pub use derive_new::*;
 
 pub use anyhow::{anyhow, Context, Error, Result};
 
-pub use console::Term;
+pub use console::{style, Term};
 
 pub use phf::phf_map;
 

@@ -142,15 +142,18 @@ impl<'s> SourceCursor<'s> {
 
     #[inline]
     pub fn to_error_with_load<D: Display>(&self, message: D) -> Error {
-        SourceChunk::from(self).to_error_with_kind(ErrKind::Cursor, message)
+        SourceChunk::from(self).to_error(ErrOpt::new(
+            Some(ErrKind::Cursor),
+            Some(message.to_string()),
+            None,
+        ))
     }
 }
 
 impl<'s> ErrorConverter for SourceCursor<'s> {
     #[inline]
-    fn to_error<D: Display>(&self, message: D) -> Error {
-        self.to_single_chunk()
-            .to_error_with_kind(ErrKind::Cursor, message)
+    fn to_error(&self, opt: ErrOpt) -> Error {
+        self.to_single_chunk().to_error(opt)
     }
 }
 

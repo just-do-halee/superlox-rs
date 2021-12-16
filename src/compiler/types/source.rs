@@ -128,7 +128,7 @@ impl TryFrom<PathBuf> for Source {
 
 derive_debug_partials! {
 
-    #[derive(Clone, Copy, new)]
+    #[derive(PartialOrd, Ord, Clone, Copy, new)]
     pub struct Offset {
         pub pos: usize,
         pub line: usize,
@@ -162,6 +162,14 @@ impl Span {
     #[inline]
     pub fn set_biased_start(&mut self) {
         self.end = self.start;
+    }
+    #[inline]
+    pub fn inner_check(&self, dist: Span) -> Result<()> {
+        if self.start <= dist.start && dist.end <= self.end {
+            Ok(())
+        } else {
+            reterr!("out of bounds")
+        }
     }
 }
 
@@ -234,22 +242,43 @@ impl<'s> fmt::Debug for SourceChunk<'s> {
     }
 }
 
-impl<'s> FreeErrorConverter for SourceChunk<'s> {
+impl<'s> ErrorConverter for SourceChunk<'s> {
     #[inline]
-    fn to_error_with_kind<D: Display>(&self, kind: ErrKind, message: D) -> Error {
+    fn to_error(&self, opt: ErrOpt) -> Error {
+        let ErrOpt { kind, message, red } = opt;
         let Span { start, end } = self.span;
+
+        let (chunk, column) = if let Some(dist) = red {
+            self.span.inner_check(dist).unwrap();
+            let left = start.pos..dist.start.pos;
+            let mid = dist;
+            let right = dist.end.pos..end.pos;
+            let column = dist.start.column;
+            (
+                format!(
+                    "{} {} {}",
+                    self._body(left),
+                    style(self._body(mid)).bold().red(),
+                    self._body(right)
+                ),
+                column,
+            )
+        } else {
+            (self.to_string(), end.column)
+        };
+
         makeerr_with_kind!(
-            kind,
+            kind.unwrap_or_default(),
             "{n2}\t[{}:{}] {:?}{n3}\t{}{n3}\t->  {}{n2}",
             if start.line != end.line {
                 format!("{}-{}", start.line, end.line)
             } else {
                 format!("{}", start.line)
             },
-            end.column,
+            column,
             self.source.head,
-            self,
-            message,
+            chunk,
+            message.unwrap_or_default(),
             n2 = nl!(2),
             n3 = nl!(3),
         )
@@ -279,6 +308,10 @@ impl<'s> SourceChunk<'s> {
     pub fn body(&self) -> &str {
         let Span { start, end } = self.span;
         &self.source.body[start.pos..end.pos]
+    }
+    #[inline]
+    pub fn _body<R: Into<Range<usize>>>(&self, range: R) -> &str {
+        &self.source.body[range.into()]
     }
 }
 
@@ -325,6 +358,17 @@ impl<'s> From<SourceCursor<'s>> for SourceChunk<'s> {
         SourceChunk {
             source: cursor.source,
             span: cursor.load_span(),
+        }
+    }
+}
+
+impl<'s> From<Range<Token<'s>>> for SourceChunk<'s> {
+    #[inline]
+    fn from(v: Range<Token<'s>>) -> Self {
+        let Range { start, end } = v;
+        SourceChunk {
+            source: start.lexeme.source,
+            span: Span::from(start.lexeme.span().start..end.lexeme.span().end),
         }
     }
 }

@@ -18,10 +18,11 @@ where
     fn visit(&self, e: Expression) -> Result<Object> {
         let e = e.as_ref();
         Ok(match e {
-            Expr::Binary(l, token, r) => {
+            Expr::Binary(sc, l, token, r) => {
                 let left = self.visit(l)?;
                 let right = self.visit(r)?;
                 let kind = token.kind;
+                let red = *token.lexeme.span();
 
                 match (left, right, kind) {
                     (l, r, TokenKind::EqualEqual) => Object::Boolean(l == r),
@@ -29,10 +30,12 @@ where
 
                     (Object::String(left), Object::String(right), _) => match kind {
                         TokenKind::Plus => Object::String(format!("{}{}", left, right)),
-                        _ => reterr!(token.to_error_with_kind(
-                            ErrKind::Parse,
-                            "Please consider string concatenating operator '+'."
-                        )),
+                        _ => ret_to_error!(
+                            sc,
+                            kind = ErrKind::Runtime,
+                            message = "Please consider string concatenating operator '+'.",
+                            red = red,
+                        ),
                     },
                     (Object::Number(left), Object::Number(right), _) => match token.kind {
                         // arithmetic
@@ -52,30 +55,49 @@ where
                         TokenKind::VerticalBar => Object::Number(left | right),
                         TokenKind::Circumflex => Object::Number(left ^ right),
 
-                        _ => reterr!(token.to_error_with_kind(ErrKind::Parse, "Unknown operator.")),
+                        _ => ret_to_error!(
+                            sc,
+                            kind = ErrKind::Runtime,
+                            message = "Unknown operator.",
+                            red = red,
+                        ),
                     },
-                    _ => reterr!(
-                        token.to_error_with_kind(ErrKind::Parse, "Unexpected binary syntax.")
+                    _ => ret_to_error!(
+                        sc,
+                        kind = ErrKind::Runtime,
+                        message = "Unexpected binary syntax.",
+                        red = red,
                     ),
                 }
             }
 
-            Expr::Grouping(expr) => self.visit(expr)?,
+            Expr::Grouping(_, expr) => self.visit(expr)?,
 
-            Expr::Literal(literal) => literal.to_object(),
+            Expr::Literal(_, literal) => literal.to_object(),
 
-            Expr::Unary(token, expr) => {
+            Expr::Unary(sc, token, expr) => {
                 let right = self.visit(expr)?;
+                let red = *token.lexeme.span();
                 match (token.kind, right) {
                     (TokenKind::Bang, object) => !object,
                     (TokenKind::Minus, Object::Number(number)) => Object::Number(-number),
-                    _ => {
-                        reterr!(token.to_error_with_kind(ErrKind::Parse, "Unexpected unary syntax."))
-                    }
+                    (TokenKind::Minus, _) => ret_to_error!(
+                        sc,
+                        kind = ErrKind::Runtime,
+                        message = "Operand must be a number.",
+                        red = red,
+                    ),
+
+                    _ => ret_to_error!(
+                        sc,
+                        kind = ErrKind::Runtime,
+                        message = "Unexpected unary syntax.",
+                        red = red,
+                    ),
                 }
             }
 
-            Expr::Comma(exprs) => {
+            Expr::Comma(_, exprs) => {
                 let mut vec = Vec::new();
 
                 for expr in exprs.iter() {

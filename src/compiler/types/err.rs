@@ -3,10 +3,28 @@
 use super::*;
 
 derive_debug_partials! {
+
     #[derive(Clone, Copy)]
     pub enum ErrKind {
         Cursor,
         Parse,
+        Runtime,
+        None,
+    }
+
+    #[derive(Clone, new)]
+    pub struct ErrOpt {
+        pub kind: Option<ErrKind>,
+        pub message: Option<String>,
+        pub red: Option<Span>,
+    }
+
+}
+
+impl Default for ErrKind {
+    #[inline]
+    fn default() -> Self {
+        ErrKind::None
     }
 }
 

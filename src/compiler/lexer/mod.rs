@@ -158,7 +158,7 @@ pub fn run(source: &Source) -> Result<Tokens> {
             }
             _ => {
                 cursor.flush();
-                cursor.to_error("Unexpected character.");
+                to_error!(cursor, message = "Unexpected character.",);
             }
         }
     }

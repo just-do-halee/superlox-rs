@@ -2,25 +2,14 @@
 
 use super::*;
 
-pub trait FreeErrorConverter {
-    fn to_error_with_kind<D: Display>(&self, kind: ErrKind, message: D) -> Error;
-    #[inline]
-    fn into_error_with_kind<D: Display>(self, kind: ErrKind, message: D) -> Error
-    where
-        Self: Sized,
-    {
-        self.to_error_with_kind(kind, message)
-    }
-}
-
 pub trait ErrorConverter {
-    fn to_error<D: Display>(&self, message: D) -> Error;
+    fn to_error(&self, opt: ErrOpt) -> Error;
     #[inline]
-    fn into_error<D: Display>(self, message: D) -> Error
+    fn into_error(self, opt: ErrOpt) -> Error
     where
         Self: Sized,
     {
-        self.to_error(message)
+        self.to_error(opt)
     }
 }
 
@@ -134,6 +123,8 @@ pub trait Parser<'s> {
     fn catch(&mut self, e: Error) -> Result<Expr<'s>>;
     fn synchronize(&mut self);
     fn expression(&mut self) -> Result<Expr<'s>>;
+
+    fn comma(&mut self) -> Result<Expr<'s>>;
     fn equality(&mut self) -> Result<Expr<'s>>;
     fn comparison(&mut self) -> Result<Expr<'s>>;
     fn bitwise(&mut self) -> Result<Expr<'s>>;

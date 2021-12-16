@@ -45,8 +45,11 @@ pub fn process(some_path: Option<PathBuf>) -> ProcessResult {
     // main process
 
     let out = lexer::run(&source)?;
-
     let out = parser::run(out)?;
+
+    eprintln!("{}", out);
+
+    let out = ExprVisitor.visit(out)?;
 
     eprintln!("{}", out);
 

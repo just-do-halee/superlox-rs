@@ -161,3 +161,27 @@ macro_rules! impl_ {
         }
     };
 }
+
+#[macro_export]
+macro_rules! to_error {
+    (@SomeOrNone $e:expr) => {
+        Some($e)
+    };
+    (@SomeOrNone) => {
+        None
+    };
+    ($target:expr, $(kind = $kind:expr,)? $(message = $msg:expr,)? $(red = $red:expr,)?) => {
+        $target.to_error(ErrOpt::new(
+                            to_error!(@SomeOrNone $($kind)?),
+                            to_error!(@SomeOrNone $($msg.to_string())?),
+                            to_error!(@SomeOrNone $($red)?),
+                        ))
+    };
+}
+
+#[macro_export]
+macro_rules! ret_to_error {
+    ($target:expr, $(kind = $kind:expr,)? $(message = $msg:expr,)? $(red = $red:expr,)?) => {
+        reterr!(to_error!($target, $(kind = $kind,)? $(message = $msg,)? $(red = $red,)?))
+    };
+}

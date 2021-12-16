@@ -6,16 +6,27 @@ use super::*;
 pub struct TokenParser<'s> {
     cursor: TokenCursor<'s>,
     caught: bool,
+    start_token: Token<'s>,
 }
 
 impl<'s> TokenParser<'s> {
     #[inline]
     pub fn new<T: Into<Tokens<'s>>>(tokens: T) -> Result<Self> {
         let cursor = TokenCursor::new(tokens)?;
+        let start_token = cursor.first();
         Ok(Self {
             cursor,
             caught: false,
+            start_token,
         })
+    }
+
+    #[inline]
+    fn preserved_chunk(&mut self) -> SourceChunk<'s> {
+        let source = self.start_token.lexeme.source;
+        let start = self.start_token.lexeme.span().start;
+        let end = self.cursor.current().lexeme.span().end;
+        SourceChunk::new(source, start..end).unwrap()
     }
 }
 
@@ -28,6 +39,7 @@ impl<'s> Parser<'s> for TokenParser<'s> {
     #[inline]
     fn init(&mut self) -> Result<()> {
         self.caught = false;
+        self.start_token = self.cursor.first();
         Ok(())
     }
 
@@ -71,20 +83,30 @@ impl<'s> Parser<'s> for TokenParser<'s> {
 
     #[inline]
     fn expression(&mut self) -> Result<Expr<'s>> {
-        // + comma expressions
+        self.comma()
+    }
+
+    #[inline]
+    fn comma(&mut self) -> Result<Expr<'s>> {
         // TODO: make an exception function call's argument list
         let expr = self.equality()?;
 
         Ok(if self.cursor.first().kind == TokenKind::Comma {
             self.cursor.bump();
+
+            self.start_token = self.cursor.first();
+
             let mut vec = vec![expr, self.equality()?];
 
             while self.cursor.first().kind == TokenKind::Comma {
                 self.cursor.bump();
+
+                self.start_token = self.cursor.first();
+
                 vec.push(self.equality()?);
             }
 
-            Expr::Comma(vec)
+            Expr::Comma(self.preserved_chunk(), vec)
         } else {
             expr
         })
@@ -99,7 +121,7 @@ impl<'s> Parser<'s> for TokenParser<'s> {
             let operator = self.cursor.bump();
             let right = self.comparison()?.into();
 
-            expr = Expr::Binary(left, operator, right);
+            expr = Expr::Binary(self.preserved_chunk(), left, operator, right);
         }
 
         Ok(expr)
@@ -118,7 +140,7 @@ impl<'s> Parser<'s> for TokenParser<'s> {
             let operator = self.cursor.bump();
             let right = self.bitwise()?.into();
 
-            expr = Expr::Binary(left, operator, right);
+            expr = Expr::Binary(self.preserved_chunk(), left, operator, right);
         }
 
         Ok(expr)
@@ -135,7 +157,7 @@ impl<'s> Parser<'s> for TokenParser<'s> {
             let operator = self.cursor.bump();
             let right = self.term()?.into();
 
-            expr = Expr::Binary(left, operator, right);
+            expr = Expr::Binary(self.preserved_chunk(), left, operator, right);
         }
 
         Ok(expr)
@@ -150,7 +172,7 @@ impl<'s> Parser<'s> for TokenParser<'s> {
             let operator = self.cursor.bump();
             let right = self.factor()?.into();
 
-            expr = Expr::Binary(left, operator, right);
+            expr = Expr::Binary(self.preserved_chunk(), left, operator, right);
         }
 
         Ok(expr)
@@ -165,7 +187,7 @@ impl<'s> Parser<'s> for TokenParser<'s> {
             let operator = self.cursor.bump();
             let right = self.unary()?.into();
 
-            expr = Expr::Binary(left, operator, right);
+            expr = Expr::Binary(self.preserved_chunk(), left, operator, right);
         }
 
         Ok(expr)
@@ -177,7 +199,7 @@ impl<'s> Parser<'s> for TokenParser<'s> {
             let operator = self.cursor.bump();
             let right = self.unary()?.into();
 
-            Ok(Expr::Unary(operator, right))
+            Ok(Expr::Unary(self.preserved_chunk(), operator, right))
         } else {
             self.primary()
         }
@@ -191,18 +213,21 @@ impl<'s> Parser<'s> for TokenParser<'s> {
             | TokenKind::False
             | TokenKind::Nil
             | TokenKind::Number
-            | TokenKind::String => Expr::Literal(token.literal),
+            | TokenKind::String => Expr::Literal(self.preserved_chunk(), token.literal),
             TokenKind::LeftParen => {
-                let expr = self.expression()?.into();
+                let expr = self.comma()?.into();
                 let next_token = self.cursor.bump();
 
                 if next_token.kind != TokenKind::RightParen {
-                    reterr!(next_token
-                        .to_error_with_kind(ErrKind::Parse, "Expect ')' after expression."));
+                    ret_to_error!(
+                        next_token,
+                        kind = ErrKind::Parse,
+                        message = "Expect ')' after expression.",
+                    );
                 }
-                Expr::Grouping(expr)
+                Expr::Grouping(self.preserved_chunk(), expr)
             }
-            _ => reterr!(token.to_error_with_kind(ErrKind::Parse, "Expect expression.")),
+            _ => ret_to_error!(token, kind = ErrKind::Parse, message = "Expect expression.",),
         })
     }
 }

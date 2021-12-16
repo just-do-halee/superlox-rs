@@ -8,11 +8,11 @@ derive_debug_partials! {
 
     #[derive(Clone)]
     pub enum Expr<'s> {
-        Binary(boxed::Expr<'s>, Token<'s>, boxed::Expr<'s>),
-        Grouping(boxed::Expr<'s>),
-        Literal(TokenLiteral),
-        Unary(Token<'s>, boxed::Expr<'s>),
-        Comma(Vec<Expr<'s>>),
+        Binary(SourceChunk<'s>, boxed::Expr<'s>, Token<'s>, boxed::Expr<'s>),
+        Grouping(SourceChunk<'s>, boxed::Expr<'s>),
+        Literal(SourceChunk<'s>, TokenLiteral),
+        Unary(SourceChunk<'s>, Token<'s>, boxed::Expr<'s>),
+        Comma(SourceChunk<'s>, Vec<Expr<'s>>),
         None,
     }
 
@@ -28,19 +28,19 @@ impl<'s> AsRef<Expr<'s>> for Expr<'s> {
 impl<'s> Display for Expr<'s> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Expr::Binary(l_e, t, r_e) => {
+            Expr::Binary(_, l_e, t, r_e) => {
                 write!(f, "({} {} {})", t.lexeme, l_e, r_e)
             }
-            Expr::Grouping(e) => {
+            Expr::Grouping(_, e) => {
                 write!(f, "(group {})", e)
             }
-            Expr::Literal(tl) => {
+            Expr::Literal(_, tl) => {
                 write!(f, "{}", tl)
             }
-            Expr::Unary(t, e) => {
+            Expr::Unary(_, t, e) => {
                 write!(f, "({} {})", t.lexeme, e)
             }
-            Expr::Comma(v) => {
+            Expr::Comma(_, v) => {
                 let mut it = v.iter();
                 write!(f, "{}", it.next().unwrap())?;
 
