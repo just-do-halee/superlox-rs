@@ -180,6 +180,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "cursor"
+version = "2.3.0"
+
+[[package]]
 name = "derive-new"
 version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -612,6 +616,7 @@ dependencies = [
  "argone",
  "collectfiles",
  "console",
+ "cursor",
  "derive-new",
  "phf",
  "rayon",

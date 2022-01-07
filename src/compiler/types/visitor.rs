@@ -33,7 +33,7 @@ where
                         _ => ret_to_error!(
                             sc,
                             kind = ErrKind::Runtime,
-                            message = "Please consider string concatenating operator '+'.",
+                            message = "Please consider to concatenate two strings by operator '+'.",
                             red = red,
                         ),
                     },
@@ -62,6 +62,31 @@ where
                             red = red,
                         ),
                     },
+                    (_, _, TokenKind::Plus) => ret_to_error!(
+                        sc,
+                        kind = ErrKind::Runtime,
+                        message = "Operands must be two numbers or two strings.",
+                        red = red,
+                    ),
+                    (
+                        _,
+                        _,
+                        TokenKind::Star
+                        | TokenKind::Minus
+                        | TokenKind::Slash
+                        | TokenKind::Less
+                        | TokenKind::LessEqual
+                        | TokenKind::Greater
+                        | TokenKind::GreaterEqual
+                        | TokenKind::Ampersand
+                        | TokenKind::VerticalBar
+                        | TokenKind::Circumflex,
+                    ) => ret_to_error!(
+                        sc,
+                        kind = ErrKind::Runtime,
+                        message = "Operands must be numbers.",
+                        red = red,
+                    ),
                     _ => ret_to_error!(
                         sc,
                         kind = ErrKind::Runtime,
@@ -78,7 +103,9 @@ where
             Expr::Unary(sc, token, expr) => {
                 let right = self.visit(expr)?;
                 let red = *token.lexeme.span();
-                match (token.kind, right) {
+                let kind = token.kind;
+
+                match (kind, right) {
                     (TokenKind::Bang, object) => !object,
                     (TokenKind::Minus, Object::Number(number)) => Object::Number(-number),
                     (TokenKind::Minus, _) => ret_to_error!(

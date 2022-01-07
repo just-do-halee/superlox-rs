@@ -18,7 +18,17 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+# [dev-dependencies]
+# criterion = "0.3"
+# superlox-rs = { path = "/Users/hwakyeom/programs/projects/superlox-rs" }
+
+# [[bench]]
+# name = "my_benchmark"
+# harness = false
+
 [dependencies]
+
+cursor = { path = "/Users/hwakyeom/programs/libs/cursor" }
 
 phf = { version = "0.10", features = ["macros"] }
 

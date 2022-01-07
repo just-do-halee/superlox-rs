@@ -5,10 +5,40 @@ use super::*;
 #[cfg(test)]
 mod tests;
 
+mod types;
+pub use types::Lexer;
+
 #[inline]
 pub fn run(source: &Source) -> Result<Tokens> {
-    let mut ts = Tokens::new();
-    let mut cursor = SourceCursor::new(source);
+    let mut tokens = Tokens::new();
+    let mut cursor = StrCursor::new_with_extras::<LexerExtras>(source.body);
+
+    while let Some(c) = cursor.next() {
+        match c {
+            ' ' | '\r' | '\t' | '\n' => continue,
+            '+' => {
+                cursor.save();
+                tokens.push(TokenKind::Plus, SourceChunk::from(&cursor), Object::None)
+            }
+            ch!(LEFT_PAREN) => push_single_token!(@flush ts, cursor, LeftParen),
+            ch!(RIGHT_PAREN) => push_single_token!(@flush ts, cursor, RightParen),
+            ch!(LEFT_BRACE) => push_single_token!(@flush ts, cursor, LeftBrace),
+            ch!(RIGHT_BRACE) => push_single_token!(@flush ts, cursor, RightBrace),
+            ch!(COMMA) => push_single_token!(@flush ts, cursor, Comma),
+            ch!(DOT) => push_single_token!(@flush ts, cursor, Dot),
+            ch!(MINUS) => push_single_token!(@flush ts, cursor, Minus),
+            ch!(PLUS) => push_single_token!(@flush ts, cursor, Plus),
+            ch!(SEMICOLON) => push_single_token!(@flush ts, cursor, Semicolon),
+            ch!(STAR) => push_single_token!(@flush ts, cursor, Star),
+            ch!(AMPERSAND) => push_single_token!(@flush ts, cursor, Ampersand),
+            ch!(VERTICAL_BAR) => push_single_token!(@flush ts, cursor, VerticalBar),
+            ch!(CIRCUMFLEX) => push_single_token!(@flush ts, cursor, Circumflex),
+
+            _ => {
+                to_error!(cursor, message = "Unexpected character.",);
+            }
+        }
+    }
 
     loop {
         match cursor.bump_without_flush() {

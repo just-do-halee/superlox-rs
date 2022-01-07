@@ -2,15 +2,17 @@
 
 use super::*;
 
+pub use super::lexer::Lexer;
+
 mod err;
 mod traits;
 pub use err::*;
 pub use traits::*;
 
-mod cursor;
+mod extras;
 mod source;
 mod token;
-pub use cursor::*;
+pub use extras::*;
 pub use source::*;
 pub use token::*;
 

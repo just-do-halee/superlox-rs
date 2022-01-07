@@ -188,6 +188,13 @@ impl<'s> AsRef<Tokens<'s>> for Tokens<'s> {
     }
 }
 
+impl<'s> AsRef<[Token<'s>]> for Tokens<'s> {
+    #[inline]
+    fn as_ref(&self) -> &[Token<'s>] {
+        self.body.as_slice()
+    }
+}
+
 impl<'s> From<Vec<Token<'s>>> for Tokens<'s> {
     #[inline]
     fn from(body: Vec<Token<'s>>) -> Self {

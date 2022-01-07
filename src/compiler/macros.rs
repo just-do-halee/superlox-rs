@@ -81,6 +81,9 @@ macro_rules! chs {
     (@ 0-9) => {
         '0'..='9'
     };
+    (@ WHITE-SPACE) => {
+        ' ' | '\r' | '\t' | '\n'
+    };
 }
 
 #[macro_export]

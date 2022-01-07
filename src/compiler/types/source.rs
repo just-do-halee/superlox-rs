@@ -10,7 +10,7 @@ pub const WHITESPACE_CHARS: &[char] = &[' ', '\r', '\t', '\n'];
 /// * this must be a source file.
 #[derive(PartialEq, Eq, Clone)]
 pub enum SourceHeader {
-    Header { file_name: OsString, path: PathBuf },
+    Header { path: PathBuf },
     IO,
 }
 
@@ -21,6 +21,16 @@ impl Default for SourceHeader {
     }
 }
 
+impl Display for SourceHeader {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SourceHeader::Header { path } => write!(f, "{:?}", path),
+            SourceHeader::IO => write!(f, name!(IO)),
+        }
+    }
+}
+
 impl fmt::Debug for SourceHeader {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -28,23 +38,13 @@ impl fmt::Debug for SourceHeader {
     }
 }
 
-impl Display for SourceHeader {
-    #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            SourceHeader::Header { path, .. } => write!(f, "{:?}", path),
-            SourceHeader::IO => write!(f, name!(IO)),
-        }
-    }
-}
-
 impl SourceHeader {
     #[allow(dead_code)]
     #[inline]
-    pub fn as_file_name(&self) -> &OsStr {
+    pub fn as_file_name(&self) -> Option<&OsStr> {
         match self {
-            SourceHeader::Header { file_name, .. } => file_name,
-            SourceHeader::IO => OsStr::new(name!(IO)),
+            SourceHeader::Header { path } => path.file_name(),
+            SourceHeader::IO => None,
         }
     }
     #[allow(dead_code)]
@@ -57,15 +57,11 @@ impl SourceHeader {
     }
     /// if given path isn't a file then returns an error.
     #[inline]
-    pub fn new(path: PathBuf) -> Self {
-        if let Some(name) = path.file_name() {
-            SourceHeader::Header {
-                file_name: name.to_os_string(),
-                path,
-            }
-        } else {
-            SourceHeader::IO
+    pub fn new(path: PathBuf) -> Result<Self> {
+        if path.file_name().is_none() {
+            reterr!("{:?} is not a file path", path)
         }
+        Ok(SourceHeader::Header { path })
     }
 }
 
@@ -212,6 +208,15 @@ impl From<Range<Offset>> for Span {
     }
 }
 
+impl From<Range<LexerExtras>> for Span {
+    fn from(v: Range<LexerExtras>) -> Self {
+        Span {
+            start: v.start.offset,
+            end: v.end.offset,
+        }
+    }
+}
+
 impl Display for Offset {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -269,16 +274,16 @@ impl<'s> ErrorConverter for SourceChunk<'s> {
 
         makeerr_with_kind!(
             kind.unwrap_or_default(),
-            "{n2}\t[{}:{}] {:?}{n3}\t{}{n3}\t->  {}{n2}",
-            if start.line != end.line {
+            "{n2}\t[{ln}:{col}] {path}{n3}\t{chunk}{n3}\t* {message}{n2}",
+            ln = if start.line != end.line {
                 format!("{}-{}", start.line, end.line)
             } else {
                 format!("{}", start.line)
             },
-            column,
-            self.source.head,
-            chunk,
-            message.unwrap_or_default(),
+            col = column,
+            path = self.source.head,
+            chunk = chunk,
+            message = message.unwrap_or_default(),
             n2 = nl!(2),
             n3 = nl!(3),
         )
@@ -358,6 +363,16 @@ impl<'s> From<SourceCursor<'s>> for SourceChunk<'s> {
         SourceChunk {
             source: cursor.source,
             span: cursor.load_span(),
+        }
+    }
+}
+
+impl<'s> From<&Lexer<'s>> for SourceChunk<'s> {
+    fn from(lexer: &Lexer<'s>) -> Self {
+        let Lexer { source, cursor } = lexer;
+        SourceChunk {
+            source,
+            span: Span::from(cursor.to_range_extras()),
         }
     }
 }

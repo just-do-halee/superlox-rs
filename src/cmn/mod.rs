@@ -19,6 +19,8 @@ pub use phf::phf_map;
 
 pub use crate::cli::ARGS;
 
+pub use cursor::*;
+
 pub use std::{
     cmp::*,
     collections::HashMap,
@@ -28,8 +30,10 @@ pub use std::{
     fs::{self, File},
     hash::{Hash, Hasher},
     io::{self, BufWriter, Write},
+    iter::{Iterator, Peekable},
     ops::{self, Deref, DerefMut, Range},
     path::{Path, PathBuf},
+    slice::Iter,
     str::{Chars, FromStr},
     vec::IntoIter,
 };

@@ -35,10 +35,12 @@ pub fn process(some_path: Option<PathBuf>) -> ProcessResult {
             // files
             Some(path) => Source::try_from(path)?,
             // --io <INPUT>
-            None => match &ARGS.io {
-                Some(input) => Source::new(input),
-                None => reterr!("'--io <INPUT>' requires a value."),
-            },
+            None => Source::new(
+                ARGS.io
+                    .as_ref()
+                    .with_context(fnerr!("'--io <INPUT>' requires a value."))
+                    .unwrap(),
+            ),
         }
     };
 
